@@ -3,10 +3,14 @@ package ru.chat.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
+import javax.management.ConstructorParameters;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,21 +27,23 @@ public class Chat {
 
     private String nameChat;
 
+    private String caption;
+
     private Timestamp creationDate;
 
-    @ManyToOne(cascade = CascadeType.REFRESH)
-    @JoinColumn(name = "user_id")
-    private User creator;
-
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Message> messages;
+    private List<Message> messages = new ArrayList<>();
 
     @OneToMany(mappedBy = "chat")
-    private Set<UserInChat> members;
-
+    private Set<UserInChat> members = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
         this.creationDate = Timestamp.valueOf(LocalDateTime.now());
+    }
+
+    public Chat(String nameChat, String caption) {
+        this.nameChat = nameChat;
+        this.caption = caption;
     }
 }
