@@ -29,7 +29,11 @@ public class User {
     @Column(name = "password")
     private String password;
 
+<<<<<<< Updated upstream
     private AppRole role;
+=======
+    private AppRole role = AppRole.ROLE_USER;
+>>>>>>> Stashed changes
 
     @OneToMany(mappedBy = "user")
     private List<UserInChat> chats;

@@ -10,7 +10,11 @@
     </parent>
     <groupId>chat</groupId>
     <artifactId>chat</artifactId>
+<<<<<<< Updated upstream
     <version>0.0.1-SNAPSHOT</version>
+=======
+    <version>0.0.1</version>
+>>>>>>> Stashed changes
     <name>chat</name>
     <description>Demo project for Spring Boot</description>
     <properties>
@@ -55,11 +59,46 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+<<<<<<< Updated upstream
+=======
+
+        <!--Swagger-->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jaxrs</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+
+        <!-- jwt -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <!-- mapstruct -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.4.2.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.4.2.Final</version>
+        </dependency>
+
+>>>>>>> Stashed changes
     </dependencies>
 
     <build>
