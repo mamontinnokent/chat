@@ -1,11 +1,5 @@
 package ru.chat.entity.enums;
 
-<<<<<<< Updated upstream
-public enum AppRole {
-    ROLE_USER,
-    ROLE_ADMIN
-=======
-import lombok.AllArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
@@ -21,5 +15,4 @@ public enum AppRole {
                 .map(s -> new SimpleGrantedAuthority(s))
                 .collect(Collectors.toList());
     }
->>>>>>> Stashed changes
 }

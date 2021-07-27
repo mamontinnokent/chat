@@ -6,14 +6,14 @@ import javax.ws.rs.core.Application;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SampleApplication extends Application {
+public class SwaggerConfig extends Application {
 
-    public SampleApplication() {
+    public SwaggerConfig() {
         BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setTitle("SimirSoft chatw");
+        beanConfig.setTitle("SimirSoft chat");
         beanConfig.setVersion("1.0.0");
-        beanConfig.setBasePath("/api");
-        beanConfig.setResourcePackage("org.jazzteam");
+        beanConfig.setBasePath("/api/v1/");
+        beanConfig.setResourcePackage("ru.chat");
         beanConfig.setScan(true);
         beanConfig.setPrettyPrint(true);
     }

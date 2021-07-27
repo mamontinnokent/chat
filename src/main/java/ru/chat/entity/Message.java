@@ -28,12 +28,7 @@ public class Message {
     private Chat chat;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
-<<<<<<< Updated upstream
-    private User owner;
-=======
     private UserInChat owner;
->>>>>>> Stashed changes
 
     @PrePersist
     protected void onCreated() {

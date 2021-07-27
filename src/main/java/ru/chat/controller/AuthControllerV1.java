@@ -25,7 +25,7 @@ import ru.chat.service.UserService;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/auth")
-@Api(value = "User", description = "APIs for working with users")
+@Api(value = "User")
 public class AuthControllerV1 {
 
     private final UserService userService;
@@ -44,8 +44,8 @@ public class AuthControllerV1 {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Object> register(@RequestBody RegUserDTO requestDTO) {
-        userService.register(requestDTO);
+    public ResponseEntity<Object> create(@RequestBody RegUserDTO requestDTO) {
+        userService.create(requestDTO);
         return ResponseEntity.ok("Success");
     }
 }
