@@ -23,10 +23,10 @@ public class UserInChat {
 
     private boolean blocked;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REFRESH)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REFRESH)
     private Chat chat;
 
     @OneToMany(mappedBy = "owner")

@@ -3,9 +3,7 @@ package ru.chat.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 
-import javax.management.ConstructorParameters;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -31,19 +29,23 @@ public class Chat {
 
     private Timestamp creationDate;
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(
+            mappedBy = "chat",
+            cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST},
+            fetch = FetchType.EAGER
+    )
     private List<Message> messages = new ArrayList<>();
 
     @OneToMany(mappedBy = "chat")
     private Set<UserInChat> members = new HashSet<>();
 
-    @PrePersist
-    protected void onCreate() {
-        this.creationDate = Timestamp.valueOf(LocalDateTime.now());
-    }
-
     public Chat(String nameChat, String caption) {
         this.nameChat = nameChat;
         this.caption = caption;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.creationDate = Timestamp.valueOf(LocalDateTime.now());
     }
 }

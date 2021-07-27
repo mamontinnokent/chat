@@ -1,8 +1,6 @@
 package ru.chat.controller;
 
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +23,6 @@ import ru.chat.service.UserService;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/auth")
-@Api(value = "User")
 public class AuthControllerV1 {
 
     private final UserService userService;
@@ -33,7 +30,6 @@ public class AuthControllerV1 {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/signin")
-    @ApiOperation(value = "Login")
     public ResponseEntity<?> authenticate(@RequestBody AuthRequestDTO requestDTO) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 requestDTO.getEmail(), requestDTO.getPassword()

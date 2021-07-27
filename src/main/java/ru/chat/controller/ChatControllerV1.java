@@ -21,21 +21,29 @@ public class ChatControllerV1 {
         return ResponseEntity.ok("Success");
     }
 
-//    @DeleteMapping("delete/{id}")
-//    public ResponseEntity<?> delete(@RequestParam Long id) {
-//        // ! some code
-//        return "";
-//    }
-//
-//    @GetMapping("update/{id}")
-//    public ResponseEntity<?> update(@RequestParam Long id) {
-//        // ! some code
-//        return "";
-//    }
-//
-//    @GetMapping("{id}")
-//    public ResponseEntity<?> get(@RequestParam Long id) {
-//        // ! some code
-//        return "";
-//    }
+    @GetMapping
+    public ResponseEntity<?> getAllForThisUser(Principal principal) {
+        return ResponseEntity.ok(chatService.getAllForThisUser(principal));
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<?> get(@RequestParam Long id, Principal principal) {
+        return ResponseEntity.ok(chatService.get());
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> delete(@RequestParam Long id) {
+    }
+
+    @GetMapping("update/{id}")
+    public ResponseEntity<?> update(@RequestParam Long id) {
+        // ! some code
+        return "";
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<?> get(@RequestParam Long id) {
+        // ! some code
+        return "";
+    }
 }

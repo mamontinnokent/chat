@@ -10,11 +10,7 @@
     </parent>
     <groupId>chat</groupId>
     <artifactId>chat</artifactId>
-<<<<<<< Updated upstream
-    <version>0.0.1-SNAPSHOT</version>
-=======
     <version>0.0.1</version>
->>>>>>> Stashed changes
     <name>chat</name>
     <description>Demo project for Spring Boot</description>
     <properties>
@@ -59,23 +55,23 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-<<<<<<< Updated upstream
-=======
 
         <!--Swagger-->
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jaxrs</artifactId>
-            <version>1.5.6</version>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.5.2</version>
         </dependency>
 
         <!-- jwt -->
@@ -98,7 +94,6 @@
             <version>1.4.2.Final</version>
         </dependency>
 
->>>>>>> Stashed changes
     </dependencies>
 
     <build>

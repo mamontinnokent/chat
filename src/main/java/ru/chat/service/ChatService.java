@@ -15,6 +15,9 @@ import ru.chat.repository.UserRepository;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -36,8 +39,17 @@ public class ChatService {
         log.info("Chat {} was created", chat);
     }
 
+    public Map<String, Long> getAllForThisUser(Principal principal) {
+        User user = fromPrincipal(principal);
+        return userInChatRepository.findAllByUser(user).stream()
+                .collect(Collectors.toMap(k -> k.getChat().getNameChat(), v -> v.getId()));
+    }
+
     public User fromPrincipal(Principal principal) {
         return userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException(""));
+    }
+
+    public ChatResponseDTO get() {
     }
 }
