@@ -12,4 +12,5 @@ import java.util.List;
 public interface UserInChatRepository extends JpaRepository<UserInChat, Long> {
     List<UserInChat> findAllByChat(Chat chat);
     List<UserInChat> findAllByUser(User user);
+    UserInChat findByUserAndChat(User user, Chat chat);
 }
