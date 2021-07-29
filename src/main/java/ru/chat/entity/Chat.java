@@ -29,6 +29,8 @@ public class Chat {
 
     private Timestamp creationDate;
 
+    private boolean privacy;
+
     @OneToMany(
             mappedBy = "chat",
 //            cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST},
@@ -39,9 +41,10 @@ public class Chat {
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
     private Set<UserInChat> members = new HashSet<>();
 
-    public Chat(String nameChat, String caption) {
+    public Chat(String nameChat, String caption, boolean privacy) {
         this.nameChat = nameChat;
         this.caption = caption;
+        this.privacy = privacy;
     }
 
     @PrePersist

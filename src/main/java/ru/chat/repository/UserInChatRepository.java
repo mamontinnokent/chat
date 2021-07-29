@@ -10,7 +10,8 @@ import java.util.List;
 
 @Repository
 public interface UserInChatRepository extends JpaRepository<UserInChat, Long> {
-    List<UserInChat> findAllByChat(Chat chat);
+    List<UserInChat> findAllByChatAndAndInChat(Chat chat, boolean inChat);
     List<UserInChat> findAllByUser(User user);
     UserInChat findByUserAndChat(User user, Chat chat);
+    void deleteAllByUser(User user);
 }

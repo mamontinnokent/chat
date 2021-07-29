@@ -23,6 +23,8 @@ public class UserInChat {
 
     private boolean blocked;
 
+    private boolean inChat;
+
     @ManyToOne(cascade = CascadeType.REFRESH)
     private User user;
 

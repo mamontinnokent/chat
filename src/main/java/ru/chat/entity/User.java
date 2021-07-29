@@ -29,6 +29,8 @@ public class User {
     @Column(name = "password")
     private String password;
 
+    private boolean blocked;
+
     private AppRole role = AppRole.ROLE_USER;
 
     @OneToMany(mappedBy = "user")

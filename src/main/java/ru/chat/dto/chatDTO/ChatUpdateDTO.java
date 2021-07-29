@@ -3,8 +3,8 @@ package ru.chat.dto.chatDTO;
 import lombok.Data;
 
 @Data
-public class ChatCreateDTO {
-    private String name;
+public class ChatUpdateDTO {
+    private Long id;
+    private String nameChat;
     private String caption;
-    private boolean privacy;
 }
