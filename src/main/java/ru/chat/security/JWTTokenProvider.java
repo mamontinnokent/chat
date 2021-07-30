@@ -56,6 +56,7 @@ public class JWTTokenProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("id");
+
         return Long.parseLong(id);
     }
 }

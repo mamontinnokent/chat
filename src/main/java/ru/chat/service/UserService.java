@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import ru.chat.dto.userDTO.RegUserDTO;
+import ru.chat.dto.userDTO.UserResponseDTO;
 import ru.chat.dto.userDTO.UserUpdateDTO;
 import ru.chat.entity.User;
 import ru.chat.entity.enums.AppRole;
@@ -15,7 +16,8 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
-import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -27,27 +29,29 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserInChatRepository userInChatRepository;
 
+    // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
-        return userRepository.findByEmail(principal.getName())
+        return this.userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException(""));
     }
 
-    public User create(RegUserDTO userDTO) {
-        User user = userRepository.save(userMapper.create(userDTO));
-        log.info("{} was created", user);
-        return user;
+    public User create(RegUserDTO userDTO) throws Exception {
+            User user = this.userRepository.save(userMapper.create(userDTO));
+            log.info("{} был создан", user.getUsername());
+            return user;
     }
 
-    public User getById(Long id) throws UsernameNotFoundException {
-        User user = userRepository.findById(id)
+    public UserResponseDTO getById(Long id) throws UsernameNotFoundException {
+        User user = this.userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User with id - %d not found exception", id)));
-        log.info("Get user - {} with id - {}", user, id);
-        return user;
+        log.info("Получен пользователь - {} с id - {}", user.getUsername(), id);
+        return userMapper.toUserResponseDTO(user);
     }
 
-    public List<User> getAll() {
-        log.info("Get all users");
-        return userRepository.findAll();
+    public Map<String, Long> getAll() {
+        log.info("Получены все пользователи");
+        return userRepository.findAll().stream()
+                .collect(Collectors.toMap(k -> k.getUsername(), v -> v.getId()));
     }
 
     // * удаление других пользователей для админов приложения
@@ -55,10 +59,10 @@ public class UserService {
         User admin = this.fromPrincipal(principal);
 
         if (admin.getRole() == AppRole.ROLE_ADMIN) {
-            User user = userRepository.getById(id);
-            userRepository.delete(user);
-            userInChatRepository.deleteAllByUser(user);
-            log.info("User with id - {} was deleted", id);
+            User user = this.userRepository.getById(id);
+            this.userRepository.delete(user);
+            this.userInChatRepository.deleteAllByUser(user);
+            log.info("Пользователь с id - {} был удален", id);
         } else {
             throw new YouDontHavePermissionExceptiom("Only admin can delete other user from app");
         }
@@ -67,27 +71,27 @@ public class UserService {
     // * удаление себя
     public void delete(Principal principal) {
         User user = this.fromPrincipal(principal);
-        userRepository.delete(user);
+        this.userRepository.delete(user);
 
-        log.info("Current user was deleted (username - {})", user.getUsername());
+        log.info("Текущий пользователь был удалён (username - {})", user.getUsername());
     }
 
     public UserUpdateDTO update(UserUpdateDTO userDTO, Principal principal) {
-        User user = fromPrincipal(principal);
+        User user = this.fromPrincipal(principal);
 
         user.setEmail(userDTO.getEmail());
         user.setUsername(userDTO.getUsername());
 
-        userRepository.save(user);
+        this.userRepository.save(user);
 
-        log.info("{} was updated", userDTO.getUsername());
+        log.info("{} был обновлён", userDTO.getUsername());
         return userDTO;
     }
 
-    public Object getCurrent(Principal principal) {
+    public UserResponseDTO getCurrent(Principal principal) {
         User user = this.fromPrincipal(principal);
 
-        log.info("{} go into profile", user.getUsername());
-        return userMapper.toUserResponseDTO(user);
+        log.info("{} зашёл в свой профиль", user.getUsername());
+        return this.userMapper.toUserResponseDTO(user);
     }
 }

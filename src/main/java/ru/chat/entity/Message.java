@@ -32,6 +32,13 @@ public class Message {
     @ManyToOne
     private UserInChat owner;
 
+    public Message(String username, String content, Chat chat, UserInChat owner) {
+        this.username = username;
+        this.content = content;
+        this.chat = chat;
+        this.owner = owner;
+    }
+
     @PrePersist
     protected void onCreated() {
         this.creationDate = Timestamp.valueOf(LocalDateTime.now());

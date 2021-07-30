@@ -1,5 +1,7 @@
 package ru.chat.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,46 +15,56 @@ import java.security.Principal;
 @RestController
 @AllArgsConstructor
 @RequestMapping("api/v1/user/")
+@Tag(name = "User controller", description = "Контроллер отвечает за логику работы с пользователем")
 public class UserControllerV1 {
 
     private final UserService userService;
 
     @GetMapping("{id}")
+    @Operation(summary = "Получение пользователя по id")
     public ResponseEntity<?> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getById(id));
+        return ResponseEntity.ok(this.userService.getById(id));
     }
 
     @GetMapping("all")
+    @Operation(summary = "Получение всех пользователей для поиска")
     public ResponseEntity<?> all() {
-        return ResponseEntity.ok(userService.getAll());
+        return ResponseEntity.ok(this.userService.getAll());
     }
 
     @DeleteMapping("delete")
+    @Operation(summary = "Удаление текщего пользователя")
     public ResponseEntity<?> delete(Principal principal) {
-        // * удаление себя из приложение
-        userService.delete(principal);
+        this.userService.delete(principal);
         return ResponseEntity.ok("Success");
     }
 
     @DeleteMapping("delete/{id}")
+    @Operation(
+            summary = "Удаление пользователя",
+            description = "Админ может удалить любого пользователя"
+    )
     public ResponseEntity<?> delete(@PathVariable Long id, Principal principal) {
-        // * удаление любого (только для админа)
         try {
-            userService.delete(id, principal);
+            this.userService.delete(id, principal);
             return ResponseEntity.ok("Success");
-        } catch (YouDontHavePermissionExceptiom youDontHavePermissionExceptiom) {
-            return new ResponseEntity<>("You can't delete other user", HttpStatus.FORBIDDEN);
+        } catch (YouDontHavePermissionExceptiom e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
     @GetMapping
+    @Operation(summary = "Получение текущего пользователей")
     public ResponseEntity<?> getCurrent(Principal principal) {
-        // * Получаем текущего юзера для профиля
-        return ResponseEntity.ok(userService.getCurrent(principal));
+        return ResponseEntity.ok(this.userService.getCurrent(principal));
     }
 
-    @PutMapping("update")
+    @PostMapping("update")
+    @Operation(
+            summary = "Обновление данных пользователя",
+            description = "Если вдруг захочется поменять юзернейм или почту"
+    )
     public ResponseEntity<?> update(@RequestBody UserUpdateDTO userDTO, Principal principal) {
-        return ResponseEntity.ok(userService.update(userDTO, principal));
+        return ResponseEntity.ok(this.userService.update(userDTO, principal));
     }
 }

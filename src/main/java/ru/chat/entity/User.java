@@ -33,6 +33,6 @@ public class User {
 
     private AppRole role = AppRole.ROLE_USER;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<UserInChat> chats;
 }

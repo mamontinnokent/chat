@@ -19,7 +19,6 @@ public interface UserMapper {
     User create(RegUserDTO dto);
 
     @Mapping(target = "chats", expression = "java(this.mapChatsToHashMap(user.getChats()))")
-    @Mapping(target = "blocked", expression = "java(false)")
     UserResponseDTO toUserResponseDTO(User user);
 
     default String encodePassword(RegUserDTO dto) {
