@@ -11,6 +11,7 @@ import ru.chat.dto.messageDTO.MessageSendRequestDTO;
 import ru.chat.service.MessageService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
+import javax.validation.Valid;
 import java.security.Principal;
 
 @Validated
@@ -24,7 +25,7 @@ public class MessageControllerV1 {
 
     @PostMapping("send")
     @Operation(summary = " Отправка сообщений")
-    public ResponseEntity<?> send(@RequestBody MessageSendRequestDTO dto, Principal principal) {
+    public ResponseEntity<?> send(@Valid @RequestBody MessageSendRequestDTO dto, Principal principal) {
         try {
             this.messageService.send(dto);
             return ResponseEntity.ok("Success");
@@ -35,7 +36,7 @@ public class MessageControllerV1 {
 
     @DeleteMapping("{userInChatId}/{messageId}")
     @Operation(summary = "Удаление сообщения")
-    public ResponseEntity<?> delete(@PathVariable Long userInChatId, @PathVariable Long messageId) {
+    public ResponseEntity<?> delete(@Valid @PathVariable Long userInChatId, @PathVariable Long messageId) {
         try {
             this.messageService.delete(userInChatId, messageId);
             return ResponseEntity.ok("Success");

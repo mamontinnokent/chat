@@ -11,6 +11,7 @@ import ru.chat.dto.userDTO.UserUpdateDTO;
 import ru.chat.service.UserService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
+import javax.validation.Valid;
 import java.security.Principal;
 
 @Validated
@@ -66,7 +67,7 @@ public class UserControllerV1 {
             summary = "Обновление данных пользователя",
             description = "Если вдруг захочется поменять юзернейм или почту"
     )
-    public ResponseEntity<?> update(@RequestBody UserUpdateDTO userDTO, Principal principal) {
+    public ResponseEntity<?> update(@Valid @RequestBody UserUpdateDTO userDTO, Principal principal) {
         return ResponseEntity.ok(this.userService.update(userDTO, principal));
     }
 }

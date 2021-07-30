@@ -1,6 +1,5 @@
 package ru.chat.entity;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import ru.chat.entity.enums.ChatRole;

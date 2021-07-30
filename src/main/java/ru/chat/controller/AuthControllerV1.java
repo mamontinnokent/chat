@@ -22,6 +22,8 @@ import ru.chat.security.JWTTokenProvider;
 import ru.chat.security.SecurityConstants;
 import ru.chat.service.UserService;
 
+import javax.validation.Valid;
+
 @Slf4j
 @Validated
 @RestController
@@ -36,7 +38,7 @@ public class AuthControllerV1 {
 
     @PostMapping("/signin")
     @Operation(summary = "Авторизация пользователя")
-    public ResponseEntity<?> authenticate(@RequestBody AuthRequestDTO requestDTO) {
+    public ResponseEntity<?> authenticate(@Valid @RequestBody AuthRequestDTO requestDTO) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     requestDTO.getEmail(), requestDTO.getPassword()
@@ -52,7 +54,7 @@ public class AuthControllerV1 {
 
     @PostMapping("/signup")
     @Operation(summary = "Регистрация пользователя")
-    public ResponseEntity<Object> create(@RequestBody UserRegRequestDTO requestDTO) {
+    public ResponseEntity<Object> create(@Valid @RequestBody UserRegRequestDTO requestDTO) {
         try {
             this.userService.create(requestDTO);
             return ResponseEntity.ok("Success");
