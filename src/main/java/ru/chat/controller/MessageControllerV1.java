@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.chat.dto.messageDTO.MessageSendDTO;
 import ru.chat.service.MessageService;
@@ -12,6 +13,7 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import java.security.Principal;
 
+@Validated
 @RestController
 @AllArgsConstructor
 @RequestMapping("message/")
