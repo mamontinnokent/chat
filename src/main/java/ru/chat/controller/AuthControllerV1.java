@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.chat.dto.authDTO.AuthRequestDTO;
-import ru.chat.dto.userDTO.RegUserDTO;
+import ru.chat.dto.userDTO.UserRegRequestDTO;
 import ru.chat.dto.utilDTO.JWTTokenSuccessResponseDTO;
 import ru.chat.security.JWTTokenProvider;
 import ru.chat.security.SecurityConstants;
@@ -52,7 +52,7 @@ public class AuthControllerV1 {
 
     @PostMapping("/signup")
     @Operation(summary = "Регистрация пользователя")
-    public ResponseEntity<Object> create(@RequestBody RegUserDTO requestDTO) {
+    public ResponseEntity<Object> create(@RequestBody UserRegRequestDTO requestDTO) {
         try {
             this.userService.create(requestDTO);
             return ResponseEntity.ok("Success");

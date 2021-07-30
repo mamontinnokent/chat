@@ -3,7 +3,7 @@ package ru.chat.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import ru.chat.dto.userDTO.RegUserDTO;
+import ru.chat.dto.userDTO.UserRegRequestDTO;
 import ru.chat.dto.userDTO.UserResponseDTO;
 import ru.chat.entity.User;
 import ru.chat.entity.UserInChat;
@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 public interface UserMapper {
 
     @Mapping(target = "password", expression = "java(this.encodePassword(dto))")
-    User create(RegUserDTO dto);
+    User create(UserRegRequestDTO dto);
 
     @Mapping(target = "chats", expression = "java(this.mapChatsToHashMap(user.getChats()))")
     UserResponseDTO toUserResponseDTO(User user);
 
-    default String encodePassword(RegUserDTO dto) {
+    default String encodePassword(UserRegRequestDTO dto) {
         return (new BCryptPasswordEncoder(12)).encode(dto.getPassword());
     }
 

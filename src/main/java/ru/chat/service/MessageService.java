@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.chat.dto.messageDTO.MessageSendDTO;
+import ru.chat.dto.messageDTO.MessageSendRequestDTO;
 import ru.chat.entity.Chat;
 import ru.chat.entity.Message;
 import ru.chat.entity.User;
@@ -35,7 +35,7 @@ public class MessageService {
     }
 
     // * Отправка сообщений. Отправлять может только не заблокированный пользователь.
-    public void send(MessageSendDTO dto) throws YouDontHavePermissionExceptiom {
+    public void send(MessageSendRequestDTO dto) throws YouDontHavePermissionExceptiom {
         UserInChat user = this.userInChatRepository.getById(dto.getUserId());
 
         // * Проверка заблокирован ли пользователь

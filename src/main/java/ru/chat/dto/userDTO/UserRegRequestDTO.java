@@ -8,7 +8,7 @@ import javax.validation.constraints.Size;
 
 @Data
 @AllArgsConstructor
-public class RegUserDTO {
+public class UserRegRequestDTO {
     @Email
     private String email;
     @Size(min = 4)

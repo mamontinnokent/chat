@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class MessageSendDTO {
+public class MessageSendRequestDTO {
     @NotNull
     @Digits(integer = 19, fraction = 0)
     private Long userId;

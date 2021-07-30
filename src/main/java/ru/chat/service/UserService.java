@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-import ru.chat.dto.userDTO.RegUserDTO;
+import ru.chat.dto.userDTO.UserRegRequestDTO;
 import ru.chat.dto.userDTO.UserResponseDTO;
 import ru.chat.dto.userDTO.UserUpdateDTO;
 import ru.chat.entity.User;
@@ -35,7 +35,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException(""));
     }
 
-    public User create(RegUserDTO userDTO) throws Exception {
+    public User create(UserRegRequestDTO userDTO) throws Exception {
             User user = this.userRepository.save(userMapper.create(userDTO));
             log.info("{} был создан", user.getUsername());
             return user;

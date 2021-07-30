@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.chat.dto.messageDTO.MessageSendDTO;
+import ru.chat.dto.messageDTO.MessageSendRequestDTO;
 import ru.chat.service.MessageService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
@@ -24,7 +24,7 @@ public class MessageControllerV1 {
 
     @PostMapping("send")
     @Operation(summary = " Отправка сообщений")
-    public ResponseEntity<?> send(@RequestBody MessageSendDTO dto, Principal principal) {
+    public ResponseEntity<?> send(@RequestBody MessageSendRequestDTO dto, Principal principal) {
         try {
             this.messageService.send(dto);
             return ResponseEntity.ok("Success");
