@@ -16,10 +16,12 @@ import ru.chat.repository.UserInChatRepository;
 import ru.chat.repository.UserRepository;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
+import javax.transaction.Transactional;
 import java.security.Principal;
 
 @Slf4j
 @Service
+@Transactional
 @AllArgsConstructor
 public class MessageService {
 
