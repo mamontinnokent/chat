@@ -2,12 +2,12 @@ package ru.chat.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.chat.dto.messageDTO.MessageResponseDTO;
+import ru.chat.dto.response.MessageResponseDTO;
 import ru.chat.entity.Chat;
 import ru.chat.entity.Message;
 import ru.chat.entity.User;
 import ru.chat.entity.UserInChat;
-import ru.chat.dto.chatDTO.ChatResponseDTO;
+import ru.chat.dto.response.ChatResponseDTO;
 
 @Mapper(componentModel = "spring")
 public interface ChatMapper {

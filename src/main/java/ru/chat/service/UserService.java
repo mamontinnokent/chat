@@ -3,10 +3,10 @@ package ru.chat.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
-import ru.chat.dto.userDTO.UserRegRequestDTO;
-import ru.chat.dto.userDTO.UserResponseDTO;
-import ru.chat.dto.userDTO.UserUpdateDTO;
+import org.springframework.stereotype.Service;
+import ru.chat.dto.request.UserRegRequestDTO;
+import ru.chat.dto.response.UserResponseDTO;
+import ru.chat.dto.request.UserUpdateRequestDTO;
 import ru.chat.entity.User;
 import ru.chat.entity.enums.AppRole;
 import ru.chat.mapper.UserMapper;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Service
 @Transactional
 @AllArgsConstructor
 public class UserService {
@@ -36,13 +36,13 @@ public class UserService {
     }
 
     public User create(UserRegRequestDTO userDTO) throws Exception {
-            User user = this.userRepository.save(userMapper.create(userDTO));
-            log.info("{} был создан", user.getUsername());
-            return user;
+        var user = this.userRepository.save(userMapper.create(userDTO));
+        log.info("{} был создан", user.getUsername());
+        return user;
     }
 
     public UserResponseDTO getById(Long id) throws UsernameNotFoundException {
-        User user = this.userRepository.findById(id)
+        var user = this.userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User with id - %d not found exception", id)));
         log.info("Получен пользователь - {} с id - {}", user.getUsername(), id);
         return userMapper.toUserResponseDTO(user);
@@ -56,10 +56,10 @@ public class UserService {
 
     // * удаление других пользователей для админов приложения
     public void delete(Long id, Principal principal) throws YouDontHavePermissionExceptiom {
-        User admin = this.fromPrincipal(principal);
+        var admin = this.fromPrincipal(principal);
 
         if (admin.getRole() == AppRole.ROLE_ADMIN) {
-            User user = this.userRepository.getById(id);
+            var user = this.userRepository.getById(id);
             this.userRepository.delete(user);
             this.userInChatRepository.deleteAllByUser(user);
             log.info("Пользователь с id - {} был удален", id);
@@ -70,14 +70,14 @@ public class UserService {
 
     // * удаление себя
     public void delete(Principal principal) {
-        User user = this.fromPrincipal(principal);
+        var user = this.fromPrincipal(principal);
         this.userRepository.delete(user);
 
         log.info("Текущий пользователь был удалён (username - {})", user.getUsername());
     }
 
-    public UserUpdateDTO update(UserUpdateDTO userDTO, Principal principal) {
-        User user = this.fromPrincipal(principal);
+    public UserUpdateRequestDTO update(UserUpdateRequestDTO userDTO, Principal principal) {
+        var user = this.fromPrincipal(principal);
 
         user.setEmail(userDTO.getEmail());
         user.setUsername(userDTO.getUsername());
@@ -89,7 +89,7 @@ public class UserService {
     }
 
     public UserResponseDTO getCurrent(Principal principal) {
-        User user = this.fromPrincipal(principal);
+        var user = this.fromPrincipal(principal);
 
         log.info("{} зашёл в свой профиль", user.getUsername());
         return this.userMapper.toUserResponseDTO(user);

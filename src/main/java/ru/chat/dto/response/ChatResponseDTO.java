@@ -1,7 +1,6 @@
-package ru.chat.dto.chatDTO;
+package ru.chat.dto.response;
 
 import lombok.Data;
-import ru.chat.dto.messageDTO.MessageResponseDTO;
 
 import java.util.List;
 

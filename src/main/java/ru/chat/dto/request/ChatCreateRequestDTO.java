@@ -1,4 +1,4 @@
-package ru.chat.dto.chatDTO;
+package ru.chat.dto.request;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class ChatCreateDTO {
+public class ChatCreateRequestDTO {
     @NotBlank
     private String name;
     @NotNull

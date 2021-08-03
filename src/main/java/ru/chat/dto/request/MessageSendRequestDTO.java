@@ -1,4 +1,4 @@
-package ru.chat.dto.messageDTO;
+package ru.chat.dto.request;
 
 import lombok.Data;
 

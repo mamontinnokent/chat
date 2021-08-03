@@ -1,4 +1,4 @@
-package ru.chat.dto.userDTO;
+package ru.chat.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

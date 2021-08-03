@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.chat.dto.chatDTO.ChatCreateDTO;
-import ru.chat.dto.chatDTO.ChatUpdateDTO;
+import ru.chat.dto.chatDTO.ChatCreateRequestDTO;
+import ru.chat.dto.chatDTO.ChatUpdateRequestDTO;
 import ru.chat.service.ChatService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
@@ -25,7 +25,7 @@ public class ChatControllerV1 {
 
     @PostMapping("create")
     @Operation(summary = "Создание чата")
-    public ResponseEntity<?> create(@Valid @RequestBody ChatCreateDTO chatDTO, Principal principal) {
+    public ResponseEntity<?> create(@Valid @RequestBody ChatCreateRequestDTO chatDTO, Principal principal) {
         try {
             this.chatService.create(chatDTO, principal);
             return ResponseEntity.ok("Success");
@@ -79,7 +79,7 @@ public class ChatControllerV1 {
 
     @PostMapping("update")
     @Operation(summary = "Обновление данных чата")
-    public ResponseEntity<?> update(@Valid @RequestBody ChatUpdateDTO dto, Principal principal) {
+    public ResponseEntity<?> update(@Valid @RequestBody ChatUpdateRequestDTO dto, Principal principal) {
         try {
             this.chatService.update(dto, principal);
             return ResponseEntity.ok("Success");

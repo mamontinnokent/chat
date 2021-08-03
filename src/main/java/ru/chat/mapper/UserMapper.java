@@ -3,8 +3,8 @@ package ru.chat.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import ru.chat.dto.userDTO.UserRegRequestDTO;
-import ru.chat.dto.userDTO.UserResponseDTO;
+import ru.chat.dto.request.UserRegRequestDTO;
+import ru.chat.dto.response.UserResponseDTO;
 import ru.chat.entity.User;
 import ru.chat.entity.UserInChat;
 

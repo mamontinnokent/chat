@@ -4,7 +4,6 @@ import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import ru.chat.entity.User;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -15,11 +14,12 @@ import java.util.Map;
 public class JWTTokenProvider {
 
     public String generateToken(Authentication authentication) {
-        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-        Date now = new Date();
-        Date expireDate = new Date(now.getTime() + SecurityConstants.EXPIRAION_TIME);
+        var user = (CustomUserDetails) authentication.getPrincipal();
 
-        String userId = Long.toString(user.getId());
+        var now = new Date();
+        var expireDate = new Date(now.getTime() + SecurityConstants.EXPIRAION_TIME);
+
+        var userId = Long.toString(user.getId());
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", userId);

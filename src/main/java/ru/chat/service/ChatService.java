@@ -3,10 +3,10 @@ package ru.chat.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
-import ru.chat.dto.chatDTO.ChatCreateDTO;
-import ru.chat.dto.chatDTO.ChatResponseDTO;
-import ru.chat.dto.chatDTO.ChatUpdateDTO;
+import org.springframework.stereotype.Service;
+import ru.chat.dto.chatDTO.ChatCreateRequestDTO;
+import ru.chat.dto.response.ChatResponseDTO;
+import ru.chat.dto.chatDTO.ChatUpdateRequestDTO;
 import ru.chat.entity.Chat;
 import ru.chat.entity.User;
 import ru.chat.entity.UserInChat;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Service
 @Transactional
 @AllArgsConstructor
 public class ChatService {
@@ -41,13 +41,13 @@ public class ChatService {
     }
 
     // * Создаём чатик и создаём объект UserInChat, чтобы у пользователя были права и статус создателя
-    public void create(ChatCreateDTO chatDTO, Principal principal) throws YouDontHavePermissionExceptiom {
-        User user = this.fromPrincipal(principal);
+    public void create(ChatCreateRequestDTO chatDTO, Principal principal) throws YouDontHavePermissionExceptiom {
+        var user = this.fromPrincipal(principal);
 
         // ? Если юзер не заблокирован во всём приложении, то он создаёт чатик
         if (!user.isBlocked()) {
-            Chat chat = this.chatRepository.save(new Chat(chatDTO.getName(), chatDTO.getCaption(), chatDTO.isPrivacy()));
-            UserInChat userInChat = this.chatMapper.create(user, chat);
+            var chat = this.chatRepository.save(new Chat(chatDTO.getName(), chatDTO.getCaption(), chatDTO.isPrivacy()));
+            var userInChat = this.chatMapper.create(user, chat);
 
             // ? Если юзер админ в приложении, то админ и в чате
             if (user.getRole() == AppRole.ROLE_ADMIN)
@@ -63,7 +63,7 @@ public class ChatService {
 
     // * Получаем все чатики для текущего юзера
     public Map<String, Long> getAllForThisUser(Principal principal) {
-        User user = this.fromPrincipal(principal);
+        var user = this.fromPrincipal(principal);
         log.info("Пользователь получил свои чатики", user.getUsername());
         return this.userInChatRepository.findAllByUser(user).stream()
                 .collect(Collectors.toMap(k -> k.getChat().getNameChat(), v -> v.getId()));
@@ -85,7 +85,7 @@ public class ChatService {
     // * Когда пользователь выходит из чатик он не удаляется из него
     // * иначе если он был заблочен, то он просто перезайдёт и блокировка слетит
     public void exit(Long userInChatId) {
-        UserInChat user = this.userInChatRepository.getById(userInChatId);
+        var user = this.userInChatRepository.getById(userInChatId);
         user.setInChat(false);
         this.userInChatRepository.save(user);
         log.info("{} вышел из чата {}", user.getUser().getUsername(), user.getChat().getNameChat());
@@ -93,7 +93,7 @@ public class ChatService {
 
     // * Получаем текущий чатик из списка чатиков юзера
     public ChatResponseDTO get(Long id) {
-        UserInChat user = this.userInChatRepository.getById(id);
+        var user = this.userInChatRepository.getById(id);
         ChatResponseDTO responseDTO = this.chatMapper.getFromChat(user.getChat());
 
         log.info("Для юзера {} получен чатик {}", user.getUser().getUsername(), user.getChat().getNameChat());
@@ -109,8 +109,8 @@ public class ChatService {
 
     // * Добавляем чатик юзеру.
     public void add(Principal principal, Long chatId) {
-        User user = this.fromPrincipal(principal);
-        Chat chat = this.chatRepository.getById(chatId);
+        var user = this.fromPrincipal(principal);
+        var chat = this.chatRepository.getById(chatId);
         UserInChat userInChat = userInChatRepository.findByUserAndChat(user, chat);
 
         // * Если юзер уже был в чатике, то просто обновляем статус
@@ -130,7 +130,7 @@ public class ChatService {
     }
 
     // * Обновление чата. Обновляют только создатель и админы
-    public void update(ChatUpdateDTO dto, Principal principal) throws YouDontHavePermissionExceptiom {
+    public void update(ChatUpdateRequestDTO dto, Principal principal) throws YouDontHavePermissionExceptiom {
         Chat chat = this.chatRepository.getById(dto.getId());
         UserInChat user = this.userInChatRepository
                 .findByUserAndChat(this.fromPrincipal(principal), chat);

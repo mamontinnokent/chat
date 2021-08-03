@@ -33,7 +33,7 @@ public class Chat {
 
     @OneToMany(
             mappedBy = "chat",
-//            cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST},
+            cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST},
             fetch = FetchType.EAGER
     )
     private List<Message> messages = new ArrayList<>();

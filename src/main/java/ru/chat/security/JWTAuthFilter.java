@@ -27,12 +27,12 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            String jwt = JWTFromRequest(request);
+            var jwt = JWTFromRequest(request);
             if (StringUtils.hasText(jwt) && jwtTokenProvider.validate(jwt)) {
-                Long userId = jwtTokenProvider.getIdFromToken(jwt);
-                CustomUserDetails userDetails = customUserDetailsService.loadUserById(userId);
+                var userId = this.jwtTokenProvider.getIdFromToken(jwt);
+                var userDetails = this.customUserDetailsService.loadUserById(userId);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, Collections.emptyList());
+                var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, Collections.emptyList());
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -44,7 +44,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     }
 
     private String JWTFromRequest(HttpServletRequest request) {
-        String token = request.getHeader(SecurityConstants.HEADER_STRING);
+        var token = request.getHeader(SecurityConstants.HEADER_STRING);
         if (StringUtils.hasText(token) && token.startsWith(SecurityConstants.TOKEN_PREFIX)) {
             return token.split(" ")[1];
         }

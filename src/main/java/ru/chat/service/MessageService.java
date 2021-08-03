@@ -4,11 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.chat.dto.messageDTO.MessageSendRequestDTO;
-import ru.chat.entity.Chat;
+import ru.chat.dto.request.MessageSendRequestDTO;
 import ru.chat.entity.Message;
 import ru.chat.entity.User;
-import ru.chat.entity.UserInChat;
 import ru.chat.entity.enums.ChatRole;
 import ru.chat.repository.ChatRepository;
 import ru.chat.repository.MessageRepository;
@@ -38,12 +36,12 @@ public class MessageService {
 
     // * Отправка сообщений. Отправлять может только не заблокированный пользователь.
     public void send(MessageSendRequestDTO dto) throws YouDontHavePermissionExceptiom {
-        UserInChat user = this.userInChatRepository.getById(dto.getUserId());
+        var user = this.userInChatRepository.getById(dto.getUserId());
 
         // * Проверка заблокирован ли пользователь
         if (user.isBlocked() == false) {
-            Chat chat = chatRepository.getById(dto.getChatId());
-            Message message = new Message(
+            var chat = chatRepository.getById(dto.getChatId());
+            var message = new Message(
                     user.getUser().getUsername(),
                     dto.getContent(),
                     chat,
@@ -61,10 +59,10 @@ public class MessageService {
 
     // * Удаление сообщений. Удалять могут только модератор и админы.
     public void delete(Long userId, Long messageId) throws YouDontHavePermissionExceptiom {
-        UserInChat user = this.userInChatRepository.getById(userId);
+        var user = this.userInChatRepository.getById(userId);
 
         if (user.getRole() == ChatRole.ROLE_MODERATOR || user.getRole() == ChatRole.ROLE_ADMIN) {
-            Message message = this.messageRepository.getById(messageId);
+            var message = this.messageRepository.getById(messageId);
             this.messageRepository.delete(message);
             log.info("Сообщение с id - {} было удалено", message.getId());
         } else {

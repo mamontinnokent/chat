@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.chat.dto.userDTO.UserUpdateDTO;
+import ru.chat.dto.userDTO.UserUpdateRequestDTO;
 import ru.chat.service.UserService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
@@ -67,7 +67,7 @@ public class UserControllerV1 {
             summary = "Обновление данных пользователя",
             description = "Если вдруг захочется поменять юзернейм или почту"
     )
-    public ResponseEntity<?> update(@Valid @RequestBody UserUpdateDTO userDTO, Principal principal) {
+    public ResponseEntity<?> update(@Valid @RequestBody UserUpdateRequestDTO userDTO, Principal principal) {
         return ResponseEntity.ok(this.userService.update(userDTO, principal));
     }
 }

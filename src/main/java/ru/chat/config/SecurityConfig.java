@@ -20,11 +20,6 @@ import ru.chat.security.SecurityConstants;
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
-//@EnableGlobalMethodSecurity(
-//        securedEnabled = true,
-//        jsr250Enabled = true,
-//        proxyTargetClass = true
-//)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JWTAuthFilter jwtAuthFilter;

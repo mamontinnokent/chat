@@ -1,4 +1,4 @@
-package ru.chat.dto.chatDTO;
+package ru.chat.dto.request;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
-public class ChatUpdateDTO {
+public class ChatUpdateRequestDTO {
     @NotNull
     @Digits(integer = 19, fraction = 0)
     private Long id;
