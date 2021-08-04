@@ -23,13 +23,12 @@ public class Chat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String nameChat;
 
-    private String caption;
+    private boolean privacy;
 
     private Timestamp creationDate;
-
-    private boolean privacy;
 
     @OneToMany(
             mappedBy = "chat",
@@ -41,9 +40,8 @@ public class Chat {
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
     private Set<UserInChat> members = new HashSet<>();
 
-    public Chat(String nameChat, String caption, boolean privacy) {
+    public Chat(String nameChat, boolean privacy) {
         this.nameChat = nameChat;
-        this.caption = caption;
         this.privacy = privacy;
     }
 

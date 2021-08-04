@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.chat.dto.chatDTO.ChatCreateRequestDTO;
+import ru.chat.dto.request.ChatCreateRequestDTO;
 import ru.chat.dto.response.ChatResponseDTO;
-import ru.chat.dto.chatDTO.ChatUpdateRequestDTO;
+import ru.chat.dto.request.ChatUpdateRequestDTO;
 import ru.chat.entity.Chat;
 import ru.chat.entity.User;
 import ru.chat.entity.UserInChat;
@@ -46,7 +46,7 @@ public class ChatService {
 
         // ? Если юзер не заблокирован во всём приложении, то он создаёт чатик
         if (!user.isBlocked()) {
-            var chat = this.chatRepository.save(new Chat(chatDTO.getName(), chatDTO.getCaption(), chatDTO.isPrivacy()));
+            var chat = this.chatRepository.save(new Chat(chatDTO.getName(), chatDTO.isPrivacy()));
             var userInChat = this.chatMapper.create(user, chat);
 
             // ? Если юзер админ в приложении, то админ и в чате
@@ -69,9 +69,25 @@ public class ChatService {
                 .collect(Collectors.toMap(k -> k.getChat().getNameChat(), v -> v.getId()));
     }
 
+
     // * Находим юзера в чатике, смотрим роль и если всё ок, то удаляем
     public void delete(Long id) throws YouDontHavePermissionExceptiom {
         UserInChat permission = this.userInChatRepository.getById(id);
+
+        if (permission.getRole() == ChatRole.ROLE_ADMIN || permission.getRole() == ChatRole.ROLE_CREATOR) {
+            this.chatRepository.delete(permission.getChat());
+            log.info("Чат {} был удален", permission.getChat().getNameChat());
+        } else {
+            // ! иначе нет прав и кидается exception
+            throw new YouDontHavePermissionExceptiom("You don't have permission");
+        }
+    }
+
+    // * Находим юзера в чатике, смотрим роль и если всё ок, то удаляем
+    public void delete(String chatName, Principal principal) throws YouDontHavePermissionExceptiom {
+        var user = this.fromPrincipal(principal);
+        var chat = chatRepository.getByNameChat(chatName);
+        var permission = userInChatRepository.findByUserAndChat(user, chat);
 
         if (permission.getRole() == ChatRole.ROLE_ADMIN || permission.getRole() == ChatRole.ROLE_CREATOR) {
             this.chatRepository.delete(permission.getChat());
@@ -129,15 +145,50 @@ public class ChatService {
         }
     }
 
+    public void add(String name, Principal principal) {
+        var user = this.fromPrincipal(principal);
+        var chat = this.chatRepository.getByNameChat(name);
+        UserInChat userInChat = userInChatRepository.findByUserAndChat(user, chat);
+
+        // * Если юзер уже был в чатике, то просто обновляем статус
+        if (userInChat == null) {
+            userInChat = this.chatMapper.create(user, chat);
+
+            // * Если юзер админ в приложении, то он и в чатике админ
+            if (user.getRole() == AppRole.ROLE_ADMIN)
+                userInChat.setRole(ChatRole.ROLE_ADMIN);
+
+            this.userInChatRepository.save(userInChat);
+            log.info("{} вошёл в чатик {}", userInChat.getUser().getUsername(), userInChat.getChat().getNameChat());
+        } else {
+            userInChat.setInChat(true);
+            this.userInChatRepository.save(userInChat);
+        }
+    }
+
     // * Обновление чата. Обновляют только создатель и админы
     public void update(ChatUpdateRequestDTO dto, Principal principal) throws YouDontHavePermissionExceptiom {
-        Chat chat = this.chatRepository.getById(dto.getId());
+        var chat = this.chatRepository.getById(dto.getId());
         UserInChat user = this.userInChatRepository
                 .findByUserAndChat(this.fromPrincipal(principal), chat);
 
         if (user.getRole() == ChatRole.ROLE_CREATOR || user.getRole() == ChatRole.ROLE_ADMIN) {
             chat.setNameChat(dto.getNameChat());
-            chat.setCaption(dto.getCaption());
+            this.chatRepository.save(chat);
+            log.info("Чат {} был обновлён", chat.getNameChat());
+        } else {
+            throw new YouDontHavePermissionExceptiom("You don't have permission");
+        }
+    }
+
+    // * Обновление чата. Обновляют только создатель и админы
+    public void update(String chatName, Principal principal) throws YouDontHavePermissionExceptiom {
+        var chat = chatRepository.getByNameChat(chatName);
+        var user = this.userInChatRepository
+                .findByUserAndChat(this.fromPrincipal(principal), chat);
+
+        if (user.getRole() == ChatRole.ROLE_CREATOR || user.getRole() == ChatRole.ROLE_ADMIN) {
+            chat.setNameChat(chatName);
             this.chatRepository.save(chat);
             log.info("Чат {} был обновлён", chat.getNameChat());
         } else {

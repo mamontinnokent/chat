@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.chat.dto.chatDTO.ChatCreateRequestDTO;
-import ru.chat.dto.chatDTO.ChatUpdateRequestDTO;
+import ru.chat.dto.request.ChatCreateRequestDTO;
+import ru.chat.dto.request.ChatUpdateRequestDTO;
 import ru.chat.service.ChatService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 

@@ -13,6 +13,4 @@ public class ChatUpdateRequestDTO {
     private Long id;
     @Size(min = 3)
     private String nameChat;
-    @Size(min = 3)
-    private String caption;
 }
