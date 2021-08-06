@@ -18,6 +18,7 @@ public interface ChatMapper {
     @Mapping(target = "user", source = "user")
     @Mapping(target = "chat", source = "chat")
     @Mapping(target = "inChat", expression = "java(true)")
+    @Mapping(target = "kicked", expression = "java(false)")
     UserInChat create(User user, Chat chat);
 
     ChatResponseDTO getFromChat(Chat chat);

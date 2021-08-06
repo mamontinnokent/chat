@@ -24,6 +24,8 @@ public class UserInChat {
 
     private boolean inChat;
 
+    private boolean kicked;
+
     @ManyToOne(cascade = CascadeType.REFRESH)
     private User user;
 

@@ -1,15 +1,13 @@
-package ru.chat.service;
+package ru.chat.service.chat_bot;
 
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.chat.dto.request.ChatCreateRequestDTO;
-import ru.chat.dto.response.BotMessageRequestDTO;
-import ru.chat.entity.User;
-import ru.chat.repository.UserRepository;
+import ru.chat.dto.request.MessageSendRequestDTO;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import java.security.Principal;
+import java.util.Arrays;
 
 @Service
 @AllArgsConstructor
@@ -45,22 +43,12 @@ public class ChatBotService {
                     "-v - выводит количество текущих просмотров.\n" +
                     "-l - выводит количество лайков под видео.\n" +
                     "2. //yBot help - список доступных команд для взаимодействия.\n";
-    private final YouTubeBot youTubeBot;
-    private final ChatService chatService;
-    private final UserService userService;
-    private final UserRepository userRepository;
 
-    // * Получаем текущего пользователя, утилитарный метод
-    private User fromPrincipal(Principal principal) {
-        return this.userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
+    private final RoomOperate roomOperate;
 
-
-
-//  * Смотрим с чем операция и отправляем на функцию-исполнитель
-    public String operate(BotMessageRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
-        String operand = message.getMessage().split(" ")[0];
+    //  * Смотрим с чем операция и отправляем на функцию-исполнитель
+    public String parser(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+        String operand = message.getContent().split(" ")[0];
 
         switch (operand) {
             case "//room":
@@ -76,55 +64,67 @@ public class ChatBotService {
         return null;
     }
 
-//  * Комнаты:
-//  * 1. //room create {Название комнаты} - создает комнаты; -c закрытая комната.
-//  *    Только (владелец, модератор и админ) может
-//  *    добавлять/удалять пользователей из комнаты.
-//  * 2. //room remove {Название комнаты} - удаляет комнату (владелец и админ);
-//  * 3. //room rename {Название комнаты}||{Новое название} - переименование комнаты (владелец и админ);
-//  * 4. //room connect {Название комнаты} - войти в комнату;
-//  *    -l {login пользователя} - добавить пользователя в комнату (//room connect {Название комнаты} -l {login})
-//  * 5. //room disconnect - выйти из текущей комнаты;
-//  * 6. //room disconnect {Название комнаты} - выйти из заданной комнаты;
-//  *    -l {login пользователя} - выгоняет пользователя из комнаты (для владельца, модератора и админа).
-//  *    -m {Количество минут} - время на которое пользователь не сможет войти (для владельца, модератора и админа).
-    public String roomOperate(BotMessageRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
-        String[] request = message.getMessage().split(" ");
-        String operation = request[1];
+    //     * Комнаты:
+    public String roomOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+        String[] arrRequest = message.getContent().split(" ");
+        String request = message.getContent();
+        String operation = arrRequest[1];
 
         switch (operation) {
             case "create":
-                if (request[2].equals("-c") && !request[3].isBlank() && !request[3].isEmpty()) {
-                    chatService.create(new ChatCreateRequestDTO(request[3], true), principal);
+                if (arrRequest[2].equals("-c")) {
+                    roomOperate.create(new ChatCreateRequestDTO(arrRequest[3], true), principal);
                     return "Success";
                 }
 
-                chatService.create(new ChatCreateRequestDTO(request[2], false), principal);
+                roomOperate.create(new ChatCreateRequestDTO(arrRequest[2], false), principal);
                 return "Success";
 
             case "remove":
-                if (!request[2].isBlank() && !request[2].isEmpty()) {
-                    chatService.delete(request[2], principal);
+                if (!arrRequest[2].isBlank() && !arrRequest[2].isEmpty()) {
+                    roomOperate.delete(arrRequest[2], principal);
                     return "Success";
                 }
+                return "Bad arrRequest";
 
             case "rename":
-                String newName = request[2].split("||")[1];
-                chatService.update(request[2].split("||")[0], principal);
+                String newName = arrRequest[2].split("||")[1];
+                roomOperate.update(message.getChatId(), principal, newName);
                 return "Success";
 
             case "connect":
-                if (request[3].equals("-l")) {
-                    var user = userRepository.findByUsername(request[4])
-                            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+                if (arrRequest[3].equals("-l")) {
+                    roomOperate.addOtherUser(arrRequest[4], arrRequest[2], principal);
+                    return "Success";
                 }
 
-                chatService.add(request[2], principal);
+                roomOperate.add(arrRequest[2], principal);
                 return "Success";
 
-            case "":
+            //   * 5. //room disconnect - выйти из текущей комнаты;
+            //   * 6. //room disconnect {Название комнаты} - выйти из заданной комнаты;
+            //   *       -l {login пользователя} - выгоняет пользователя из комнаты (для владельца, модератора и админа).
+            //   *       -m {Количество минут} - время на которое пользователь не сможет войти (для владельца, модератора и админа).
+            case "disconnect":
+                if (arrRequest.length == 3) {
+                    roomOperate.disconnect(message.getChatId(), principal);
+                    return "Success";
+                } else if (arrRequest.length == 5) {
+                    roomOperate.disconnectOtherUser(arrRequest[2], arrRequest[4], principal);
+                    return "Success";
+                } else if (arrRequest.length == 7) {
+                    roomOperate.disconnectOtherUserForValueMinutes(arrRequest[2], arrRequest[4], Long.parseLong(arrRequest[6]), principal);
+                    return "Success";
+                }
+
+            default:
+                return "Invalid room operation";
         }
-        return null;
+    }
+
+    public String userOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+    }
+
+    public String youTubeOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
     }
 }

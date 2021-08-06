@@ -8,8 +8,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.chat.dto.response.BotMessageRequestDTO;
-import ru.chat.service.ChatBotService;
+import ru.chat.dto.request.MessageSendRequestDTO;
+import ru.chat.service.chat_bot.ChatBotService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import java.security.Principal;
@@ -23,9 +23,10 @@ public class ChatBotContollerV1 {
 
     private final ChatBotService chatBotService;
 
-    public ResponseEntity<?> send(@RequestBody BotMessageRequestDTO message, Principal principal) {
+    public ResponseEntity<?> send(@RequestBody MessageSendRequestDTO message, Principal principal) {
         try {
-            String result = chatBotService.operate(message, principal);
+            String result = chatBotService.parser(message, principal);
+            return ResponseEntity.ok(result);
         } catch (YouDontHavePermissionExceptiom e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

@@ -73,8 +73,12 @@ public class ChatControllerV1 {
     @GetMapping("add/{chatId}")
     @Operation(summary = "Вход в чат")
     public ResponseEntity<?> add(@PathVariable Long chatId, Principal principal) {
-        this.chatService.add(principal, chatId);
-        return ResponseEntity.ok("Success");
+        try {
+            this.chatService.add(principal, chatId);
+            return ResponseEntity.ok("Success");
+        } catch (YouDontHavePermissionExceptiom e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+        }
     }
 
     @PostMapping("update")
