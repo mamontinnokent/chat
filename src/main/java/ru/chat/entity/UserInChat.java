@@ -5,6 +5,8 @@ import lombok.Setter;
 import ru.chat.entity.enums.ChatRole;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,8 @@ public class UserInChat {
 
     private boolean kicked;
 
+    private Timestamp dateAfterGoIn;
+
     @ManyToOne(cascade = CascadeType.REFRESH)
     private User user;
 
@@ -34,4 +38,9 @@ public class UserInChat {
 
     @OneToMany(mappedBy = "owner")
     private List<Message> messages = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        dateAfterGoIn = Timestamp.valueOf(LocalDateTime.now());
+    }
 }

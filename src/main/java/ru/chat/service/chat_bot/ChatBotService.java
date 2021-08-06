@@ -7,13 +7,12 @@ import ru.chat.dto.request.MessageSendRequestDTO;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import java.security.Principal;
-import java.util.Arrays;
 
 @Service
 @AllArgsConstructor
 public class ChatBotService {
 
-    public static final String INFO =
+    private static final String INFO =
             "Комнаты:\n" +
                     "1. //room create {Название комнаты} - создает комнаты;\n" +
                     "-c закрытая комната. Только (владелец, модератор и админ) может\n" +
@@ -45,6 +44,8 @@ public class ChatBotService {
                     "2. //yBot help - список доступных команд для взаимодействия.\n";
 
     private final RoomOperate roomOperate;
+    private final UserOperate userOperate;
+    private final YouTubeOperate youTubeOperate;
 
     //  * Смотрим с чем операция и отправляем на функцию-исполнитель
     public String parser(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
@@ -54,14 +55,14 @@ public class ChatBotService {
             case "//room":
                 return this.roomOperate(message, principal);
             case "//user":
+                return this.userOperate(message, principal);
             case "//yBot":
-                break;
+                return this.youTubeOperate(message, principal);
             case "//help":
                 return INFO;
             default:
                 return "Command not valid";
         }
-        return null;
     }
 
     //     * Комнаты:
@@ -101,10 +102,6 @@ public class ChatBotService {
                 roomOperate.add(arrRequest[2], principal);
                 return "Success";
 
-            //   * 5. //room disconnect - выйти из текущей комнаты;
-            //   * 6. //room disconnect {Название комнаты} - выйти из заданной комнаты;
-            //   *       -l {login пользователя} - выгоняет пользователя из комнаты (для владельца, модератора и админа).
-            //   *       -m {Количество минут} - время на которое пользователь не сможет войти (для владельца, модератора и админа).
             case "disconnect":
                 if (arrRequest.length == 3) {
                     roomOperate.disconnect(message.getChatId(), principal);
@@ -113,7 +110,12 @@ public class ChatBotService {
                     roomOperate.disconnectOtherUser(arrRequest[2], arrRequest[4], principal);
                     return "Success";
                 } else if (arrRequest.length == 7) {
-                    roomOperate.disconnectOtherUserForValueMinutes(arrRequest[2], arrRequest[4], Long.parseLong(arrRequest[6]), principal);
+                    // ! Доделать
+                    roomOperate.disconnectOtherUserForValueMinutes(
+                            /* имя чата  */ arrRequest[2],
+                            /* имя юзера */ arrRequest[4],
+                            /* количество минут */ Long.parseLong(arrRequest[6]),
+                            principal);
                     return "Success";
                 }
 

@@ -157,6 +157,9 @@ public class RoomOperate {
         }
     }
 
+//  /* имя чата  */ arrRequest[2],
+//  /* имя юзера */ arrRequest[4],
+//  /* количество минут */ Long.parseLong(arrRequest[6]),
     public void disconnectOtherUserForValueMinutes(String s, String s1, long parseLong, Principal principal) {
     }
 }
