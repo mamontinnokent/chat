@@ -65,7 +65,7 @@ public class ChatService {
     public Map<String, Long> getAllForThisUser(Principal principal) {
         var user = this.fromPrincipal(principal);
         log.info("Пользователь получил свои чатики", user.getUsername());
-        return this.userInChatRepository.findAllByUser(user).stream()
+        return this.userInChatRepository.findAllByUserAndInChat(user, true).stream()
                 .collect(Collectors.toMap(k -> k.getChat().getNameChat(), v -> v.getId()));
     }
 
