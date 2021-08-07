@@ -112,9 +112,9 @@ public class ChatBotService {
                 } else if (arrRequest.length == 7) {
                     // ! Доделать
                     roomOperate.disconnectOtherUserForValueMinutes(
-                            /* имя чата  */ arrRequest[2],
-                            /* имя юзера */ arrRequest[4],
-                            /* количество минут */ Long.parseLong(arrRequest[6]),
+                            /* ! имя чата  */ arrRequest[2],
+                            /* ! имя юзера */ arrRequest[4],
+                            /* ! количество минут */ Long.parseLong(arrRequest[6]),
                             principal);
                     return "Success";
                 }
@@ -124,9 +124,57 @@ public class ChatBotService {
         }
     }
 
+    //  * Пользователи:
+//  * 2. //user ban;
+//  *      -l {login пользователя} - выгоняет пользователя из всех комнат
+//  *      -m {Количество минут} - время на которое пользователь не сможет войти.
+//  * 3. //user moderator {login пользователя}||{имя чата} - действия над модераторами.
+//  *      -n - назначить пользователя модератором.
+//  *      -d - “разжаловать” пользователя.
     public String userOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+        String[] arrRequest = message.getContent().split(" ");
+        String request = message.getContent();
+        String operation = arrRequest[1];
+
+        switch (operation) {
+            //  * 1. //user rename {login пользователя}||{newName}(владелец и админ);
+            case "rename":
+                String[] names = arrRequest[2].split("||");
+                this.userOperate.rename(names[0], names[1], principal);
+
+            case "ban":
+
+
+            case "moderator":
+
+
+            case "connect":
+
+            case "disconnect":
+
+            default:
+                return "Invalid user operation";
+        }
     }
 
     public String youTubeOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+        String[] arrRequest = message.getContent().split(" ");
+        String request = message.getContent();
+        String operation = arrRequest[1];
+
+        switch (operation) {
+            case "rename":
+
+            case "ban":
+
+            case "moderator":
+
+            case "connect":
+
+            case "disconnect":
+
+            default:
+                return "Invalid user operation";
+        }
     }
 }

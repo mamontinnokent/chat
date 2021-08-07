@@ -6,6 +6,7 @@ import lombok.Setter;
 import ru.chat.entity.enums.AppRole;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import java.util.List;
 
 @Getter
@@ -22,6 +23,7 @@ public class User {
     @Column(name = "username", unique = true)
     private String username;
 
+    @Email
     @Column(name = "email", unique = true)
     private String email;
 

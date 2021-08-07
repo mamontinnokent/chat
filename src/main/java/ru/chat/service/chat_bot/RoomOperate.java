@@ -30,7 +30,7 @@ public class RoomOperate {
     private final ChatRepository chatRepository;
     private final UserInChatRepository userInChatRepository;
 
-    //    * Получаем текущего пользователя, утилитарный метод
+    // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
         return this.userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -160,6 +160,6 @@ public class RoomOperate {
 //  /* имя чата  */ arrRequest[2],
 //  /* имя юзера */ arrRequest[4],
 //  /* количество минут */ Long.parseLong(arrRequest[6]),
-    public void disconnectOtherUserForValueMinutes(String s, String s1, long parseLong, Principal principal) {
+    public void disconnectOtherUserForValueMinutes(String chatName, String userName, long minuteCount, Principal principal) {
     }
 }
