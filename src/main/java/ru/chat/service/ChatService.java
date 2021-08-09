@@ -20,6 +20,8 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -84,7 +86,6 @@ public class ChatService {
     }
 
 
-
     // * Когда пользователь выходит из чатик он не удаляется из него
     // * иначе если он был заблочен, то он просто перезайдёт и блокировка слетит
     public void exit(Long userInChatId) {
@@ -114,7 +115,8 @@ public class ChatService {
     public void add(Principal principal, Long chatId) throws YouDontHavePermissionExceptiom {
         var user = this.fromPrincipal(principal);
         var chat = this.chatRepository.getById(chatId);
-        UserInChat userInChat = userInChatRepository.findByUserAndChat(user, chat);
+        var currentDate = Timestamp.valueOf(LocalDateTime.now());
+        var userInChat = userInChatRepository.findByUserAndChat(user, chat);
 
         // * Если юзер уже был в чатике, то просто обновляем статус
         if (userInChat == null) {
@@ -127,7 +129,7 @@ public class ChatService {
             this.userInChatRepository.save(userInChat);
             log.info("{} вошёл в чатик {}", userInChat.getUser().getUsername(), userInChat.getChat().getNameChat());
         } else {
-            if (userInChat.isKicked() == false) {
+            if (userInChat.getKickedTime().before(currentDate)) {
                 userInChat.setInChat(true);
                 this.userInChatRepository.save(userInChat);
             } else {
@@ -158,12 +160,15 @@ public class ChatService {
         var block = this.userInChatRepository.getById(userInChatId);
         var government = this.userInChatRepository
                 .findByUserAndChat(this.fromPrincipal(principal), block.getChat());
+        var currentTime = Timestamp.valueOf(LocalDateTime.now());
 
-        if ((government.getRole() == ChatRole.ROLE_ADMIN || government.getRole() == ChatRole.ROLE_MODERATOR) && !block.isBlocked()) {
-            block.setBlocked(true);
+        if ((government.getRole() == ChatRole.ROLE_ADMIN || government.getRole() == ChatRole.ROLE_MODERATOR) && block.getBlockedTime().before(currentTime)) {
+            Timestamp blockTime = Timestamp.valueOf(LocalDateTime.now().plusYears(20));
+            block.setBlockedTime(blockTime);
             this.userInChatRepository.save(block);
-        } else if ((government.getRole() == ChatRole.ROLE_ADMIN || government.getRole() == ChatRole.ROLE_MODERATOR) && block.isBlocked()) {
-            block.setBlocked(false);
+        } else if ((government.getRole() == ChatRole.ROLE_ADMIN || government.getRole() == ChatRole.ROLE_MODERATOR) && block.getBlockedTime().after(currentTime)) {
+            Timestamp blockTime = Timestamp.valueOf(LocalDateTime.now().minusYears(203));
+            block.setBlockedTime(blockTime);
             this.userInChatRepository.save(block);
         } else {
             throw new YouDontHavePermissionExceptiom("You don't have permission");
@@ -202,7 +207,7 @@ public class ChatService {
             checked = chatMapper.create(user, chat);
             userInChatRepository.save(checked);
         } else if (!checked.isInChat() && checker.getRole() != ChatRole.ROLE_USER) {
-            checked.setKicked(false);
+            checked.setKickedTime(Timestamp.valueOf(LocalDateTime.now().minusYears(1)));
             checked.setInChat(true);
 
             userInChatRepository.save(checked);

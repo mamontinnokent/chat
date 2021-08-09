@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import ru.chat.dto.userDTO.UserRegRequestDTO;
+import ru.chat.dto.request.UserRegRequestDTO;
 import ru.chat.entity.User;
 import ru.chat.mapper.UserMapper;
 

@@ -22,13 +22,11 @@ public class UserInChat {
 
     private ChatRole role;
 
-    private boolean blocked;
-
     private boolean inChat;
 
-    private boolean kicked;
+    private Timestamp blockedTime;
 
-    private Timestamp dateAfterGoIn;
+    private Timestamp kickedTime;
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     private User user;
@@ -41,6 +39,7 @@ public class UserInChat {
 
     @PrePersist
     protected void onCreate() {
-        dateAfterGoIn = Timestamp.valueOf(LocalDateTime.now());
+        kickedTime = Timestamp.valueOf(LocalDateTime.now());
+        blockedTime = Timestamp.valueOf(LocalDateTime.now());
     }
 }

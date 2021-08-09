@@ -9,6 +9,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.springframework.stereotype.Component;
@@ -23,9 +24,11 @@ public class YouTubeOperate {
 
     private final String KEY = "AIzaSyD30ZzB4OqXE4EgAPzJD6fBz4OabKxoA8Q";
     private final String APPLICATION_NAME = "youtube-cmdline-search-sample";
+    private final String LINK_FORM = "https://www.youtube.com/watch?v=";
 
-    public String getId(String searchingVideo, String searchingChannel) throws IOException {
+    public String get(String nameVideo, String nameChannel, boolean flagViews, boolean flagLikes) throws IOException {
         String id = null;
+        String result = "Video not found";
 
         YouTube youtubeService = new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpRequestInitializer() {
             public void initialize(HttpRequest request) throws IOException {
@@ -36,24 +39,24 @@ public class YouTubeOperate {
                 .list("snippet");
         SearchListResponse response = request.setKey(KEY)
                 .setMaxResults(25L)
-                .setQ(searchingVideo)
+                .setQ(nameVideo)
                 .execute();
 
-        JsonObject jsonObject = new JsonParser()
-                .parse(response.getItems().get(0).toString())
-                .getAsJsonObject();
-
         for (SearchResult res : response.getItems()) {
-            String nameChannel = jsonObject.get("snippet")
+            JsonObject jsonObject = new JsonParser()
+                    .parse(res.toString())
+                    .getAsJsonObject();
+
+            String findChannel = jsonObject.get("snippet")
                     .getAsJsonObject()
                     .get("channelTitle")
                     .getAsString();
-            String nameVideo = jsonObject.get("snippet")
+            String findVideo = jsonObject.get("snippet")
                     .getAsJsonObject()
                     .get("title")
                     .getAsString();
 
-            if (searchingVideo.equals(nameVideo) && searchingChannel.equals(nameChannel)) {
+            if (findVideo.equals(nameVideo) && findChannel.equals(nameChannel)) {
                 id = jsonObject.get("id")
                         .getAsJsonObject()
                         .get("videoId")
@@ -62,15 +65,57 @@ public class YouTubeOperate {
             }
         }
 
-        return id == null ? null : id;
+        if (id != null && !flagLikes && !flagViews)
+            return result = LINK_FORM + id + "\n";
+        if (id != null && flagLikes) {
+            return result = LINK_FORM + id + "\n" + "Count likes: " + getLikes(youtubeService, id);
+        } if (id != null && flagViews) {
+            return result = LINK_FORM + id + "\n" + "Count likes: " + getViews(youtubeService, id);
+        }
+
+        return result;
     }
 
+    private String getLikes(YouTube youtubeService, String id) throws IOException {
+        YouTube.Videos.List requestVid = youtubeService.videos()
+                .list("snippet,contentDetails,statistics");
+        VideoListResponse responseVid = requestVid
+                .setKey(KEY)
+                .setPart("statistics")
+                .setId(id)
+                .execute();
+
+        return (new JsonParser()
+                .parse(responseVid.toString())
+                .getAsJsonObject())
+                .get("items")
+                .getAsJsonObject()
+                .get("statistics")
+                .getAsJsonObject()
+                .get("likeCount")
+                .getAsString();
+
+    }
+
+    private String getViews(YouTube youtubeService, String id) throws IOException {
+        YouTube.Videos.List requestVid = youtubeService.videos()
+                .list("snippet,contentDetails,statistics");
+        VideoListResponse responseVid = requestVid
+                .setKey(KEY)
+                .setPart("statistics")
+                .setId(id)
+                .execute();
+
+        return (new JsonParser()
+                .parse(responseVid.toString())
+                .getAsJsonObject())
+                .get("items")
+                .getAsJsonObject()
+                .get("statistics")
+                .getAsJsonObject()
+                .get("viewCount")
+                .getAsString();
+
+    }
 }
 
-//    YouTube.Videos.List requestVid = youtubeService.videos()
-//            .list("snippet,contentDetails,statistics");
-//    VideoListResponse responseVid = requestVid
-//            .setKey(KEY)
-//            .setPart("statistics")
-//            .setId(id)
-//            .execute();

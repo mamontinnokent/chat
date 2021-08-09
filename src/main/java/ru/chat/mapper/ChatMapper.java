@@ -14,11 +14,8 @@ public interface ChatMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", expression = "java(ru.chat.entity.enums.ChatRole.ROLE_CREATOR)")
-    @Mapping(target = "blocked", expression = "java(false)")
     @Mapping(target = "user", source = "user")
     @Mapping(target = "chat", source = "chat")
-    @Mapping(target = "inChat", expression = "java(true)")
-    @Mapping(target = "kicked", expression = "java(false)")
     UserInChat create(User user, Chat chat);
 
     ChatResponseDTO getFromChat(Chat chat);

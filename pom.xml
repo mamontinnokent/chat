@@ -130,10 +130,10 @@
         </dependency>
 
         <!-- flyway -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.flywaydb</groupId>-->
+<!--            <artifactId>flyway-core</artifactId>-->
+<!--        </dependency>-->
 
         <!-- YouTube Data V3 support -->
         <dependency>

@@ -12,6 +12,7 @@ import ru.chat.dto.request.MessageSendRequestDTO;
 import ru.chat.service.chat_bot.ChatBotService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
+import java.io.IOException;
 import java.security.Principal;
 
 @Validated
@@ -29,6 +30,8 @@ public class ChatBotContollerV1 {
             return ResponseEntity.ok(result);
         } catch (YouDontHavePermissionExceptiom e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (IOException e) {
+            return new ResponseEntity<>("Bad youtube request", HttpStatus.BAD_REQUEST);
         }
     }
 

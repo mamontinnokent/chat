@@ -16,6 +16,8 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -37,9 +39,10 @@ public class MessageService {
     // * Отправка сообщений. Отправлять может только не заблокированный пользователь.
     public void send(MessageSendRequestDTO dto) throws YouDontHavePermissionExceptiom {
         var user = this.userInChatRepository.getById(dto.getUserId());
+        var currentTime = Timestamp.valueOf(LocalDateTime.now());
 
         // * Проверка заблокирован ли пользователь
-        if (user.isBlocked() == false) {
+        if (user.getBlockedTime().before(currentTime)) {
             var chat = chatRepository.getById(dto.getChatId());
             var message = new Message(
                     user.getUser().getUsername(),

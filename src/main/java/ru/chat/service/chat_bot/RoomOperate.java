@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import ru.chat.dto.request.ChatCreateRequestDTO;
 import ru.chat.entity.Chat;
 import ru.chat.entity.User;
-import ru.chat.entity.UserInChat;
 import ru.chat.entity.enums.AppRole;
 import ru.chat.entity.enums.ChatRole;
 import ru.chat.mapper.ChatMapper;
@@ -18,6 +17,8 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Component
@@ -72,10 +73,11 @@ public class RoomOperate {
         }
     }
 
-    public void add(String chatName, Principal principal) {
+    public void add(String chatName, Principal principal) throws YouDontHavePermissionExceptiom {
         var user = this.fromPrincipal(principal);
         var chat = this.chatRepository.getByNameChat(chatName);
-        UserInChat userInChat = userInChatRepository.findByUserAndChat(user, chat);
+        var userInChat = this.userInChatRepository.findByUserAndChat(user, chat);
+        var currentDate = Timestamp.valueOf(LocalDateTime.now());
 
         // * Если юзер уже был в чатике, то просто обновляем статус
         if (userInChat == null) {
@@ -87,9 +89,11 @@ public class RoomOperate {
 
             this.userInChatRepository.save(userInChat);
             log.info("{} вошёл в чатик {}", userInChat.getUser().getUsername(), userInChat.getChat().getNameChat());
-        } else if (userInChat.isKicked()) {
+        } else if (userInChat.getKickedTime().before(currentDate)) {
             userInChat.setInChat(true);
             this.userInChatRepository.save(userInChat);
+        } else {
+            throw new YouDontHavePermissionExceptiom("You can't go in chat");
         }
     }
 
@@ -107,7 +111,7 @@ public class RoomOperate {
             checked = chatMapper.create(user, chat);
             userInChatRepository.save(checked);
         } else if (!checked.isInChat() && checker.getRole() != ChatRole.ROLE_USER) {
-            checked.setKicked(false);
+            checked.setKickedTime(Timestamp.valueOf(LocalDateTime.now().minusYears(11)));
             checked.setInChat(true);
 
             userInChatRepository.save(checked);
@@ -152,14 +156,25 @@ public class RoomOperate {
         var kickedUser = this.userInChatRepository.findByUserAndChat(user, chat);
 
         if (checker.getRole() != ChatRole.ROLE_USER) {
-            kickedUser.setKicked(true);
+            kickedUser.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusYears(11) ));
             kickedUser.setInChat(false);
         }
     }
 
-//  /* имя чата  */ arrRequest[2],
-//  /* имя юзера */ arrRequest[4],
-//  /* количество минут */ Long.parseLong(arrRequest[6]),
-    public void disconnectOtherUserForValueMinutes(String chatName, String userName, long minuteCount, Principal principal) {
+    public void disconnectOtherUserForValueMinutes(String chatName, String username, long minuteCount, Principal principal) {
+        var admin = this.fromPrincipal(principal);
+        var chat = this.chatRepository.getByNameChat(chatName);
+        var adminInChat = this.userInChatRepository.findByUserAndChat(admin, chat);
+
+        if (adminInChat.getRole() != ChatRole.ROLE_USER) {
+            var currentDate = Timestamp.valueOf(LocalDateTime.now());
+            var user = this.userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User with username not found"));
+            var userInChat = this.userInChatRepository.findByUserAndChat(user, chat);
+
+            userInChat.setInChat(false);
+            userInChat.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusMinutes(minuteCount)));
+            this.userInChatRepository.save(userInChat);
+        }
     }
 }
