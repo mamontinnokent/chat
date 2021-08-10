@@ -51,7 +51,7 @@ public class RoomOperate {
                 userInChat.setRole(ChatRole.ROLE_ADMIN);
 
             this.userInChatRepository.save(userInChat);
-            log.info("Чат {} был создан", chat.getNameChat());
+            log.info("Чат {} был создан через бота пользователем - {}.", chat.getNameChat(), user.getUsername());
         } else {
             // !  иначе пользователь заблокирован и кидается exception
             throw new YouDontHavePermissionExceptiom("You are blocked");
@@ -66,7 +66,8 @@ public class RoomOperate {
 
         if (permission.getRole() == ChatRole.ROLE_ADMIN || permission.getRole() == ChatRole.ROLE_CREATOR) {
             this.chatRepository.delete(permission.getChat());
-            log.info("Чат {} был удален", permission.getChat().getNameChat());
+
+            log.info("Чат {} был удален через бота пользователем - {}.", permission.getChat().getNameChat(), user.getUsername());
         } else {
             // ! иначе нет прав и кидается exception
             throw new YouDontHavePermissionExceptiom("You don't have permission");
@@ -88,9 +89,11 @@ public class RoomOperate {
                 userInChat.setRole(ChatRole.ROLE_ADMIN);
 
             this.userInChatRepository.save(userInChat);
-            log.info("{} вошёл в чатик {}", userInChat.getUser().getUsername(), userInChat.getChat().getNameChat());
+            log.info("{} вошёл в чатик {} через бота.", user.getUsername(), chat.getNameChat());
         } else if (userInChat.getKickedTime().before(currentDate)) {
             userInChat.setInChat(true);
+
+            log.info("{} вернулся в {} через бота.", user.getUsername(), chat.getNameChat());
             this.userInChatRepository.save(userInChat);
         } else {
             throw new YouDontHavePermissionExceptiom("You can't go in chat");
@@ -104,17 +107,24 @@ public class RoomOperate {
         var user = this.userRepository.findByUsername(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
         var checked = this.userInChatRepository.findByUserAndChat(user, chat);
-        var checker = this.userInChatRepository
+        var admin = this.userInChatRepository
                 .findByUserAndChat(this.fromPrincipal(principal), chat);
+        var currentTime = Timestamp.valueOf(LocalDateTime.now());
 
         if (checked == null) {
             checked = chatMapper.create(user, chat);
             userInChatRepository.save(checked);
-        } else if (!checked.isInChat() && checker.getRole() != ChatRole.ROLE_USER) {
-            checked.setKickedTime(Timestamp.valueOf(LocalDateTime.now().minusYears(11)));
+            log.info("{} добавил в чат {} юзера - {} через бота.", admin.getUser().getUsername(), chat.getNameChat(), user.getUsername());
+        } else if (!checked.isInChat() && checked.getKickedTime().before(currentTime)) {
             checked.setInChat(true);
 
-            userInChatRepository.save(checked);
+            this.userInChatRepository.save(checked);
+        } else if (admin.getRole() != ChatRole.ROLE_USER) {
+            checked.setInChat(true);
+            checked.setKickedTime(Timestamp.valueOf(LocalDateTime.now().minusYears(1)));
+
+            this.userInChatRepository.save(checked);
+
         } else {
             throw new YouDontHavePermissionExceptiom("You can't added this user in chat.");
         }
@@ -156,8 +166,11 @@ public class RoomOperate {
         var kickedUser = this.userInChatRepository.findByUserAndChat(user, chat);
 
         if (checker.getRole() != ChatRole.ROLE_USER) {
-            kickedUser.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusYears(11) ));
+            kickedUser.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusYears(11)));
             kickedUser.setInChat(false);
+
+            this.userInChatRepository.save(kickedUser);
+            log.info("{} выгнали из чатика.", user.getUsername());
         }
     }
 
@@ -175,6 +188,7 @@ public class RoomOperate {
             userInChat.setInChat(false);
             userInChat.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusMinutes(minuteCount)));
             this.userInChatRepository.save(userInChat);
+            log.info("{} выгнан и не сможет войти {} минут.", user.getUsername(), minuteCount);
         }
     }
 }
