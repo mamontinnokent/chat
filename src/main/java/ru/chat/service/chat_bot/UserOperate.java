@@ -1,6 +1,7 @@
 package ru.chat.service.chat_bot;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import ru.chat.entity.User;
@@ -11,11 +12,14 @@ import ru.chat.repository.UserInChatRepository;
 import ru.chat.repository.UserRepository;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
+import javax.transaction.Transactional;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Component
+@Transactional
 @AllArgsConstructor
 public class UserOperate {
 
@@ -34,9 +38,10 @@ public class UserOperate {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         User principalUser = this.fromPrincipal(principal);
 
-        if (user.getUsername() == principalUser.getUsername() || principalUser.getRole() == user.getRole()) {
+        if (user.getUsername() == principalUser.getUsername() || principalUser.getRole() == AppRole.ROLE_ADMIN) {
             user.setUsername(newName);
             userRepository.save(user);
+            log.info("Пользователь с id = {} поменял имя.", user.getId());
         }
     }
 
@@ -45,14 +50,23 @@ public class UserOperate {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
         var chat = this.chatRepository.getByNameChat(chatName);
         var moderatorInFuture = this.userInChatRepository.findByUserAndChat(user, chat);
+
+        if (moderatorInFuture.getRole() == ChatRole.ROLE_CREATOR
+                || moderatorInFuture.getRole() == ChatRole.ROLE_ADMIN)
+            return;
+
         var admin = this.userInChatRepository.findByUserAndChat(this.fromPrincipal(principal), chat);
 
         if ((admin.getRole() == ChatRole.ROLE_ADMIN || moderatorInFuture.getRole() == ChatRole.ROLE_USER) && !doYouModerator) {
             moderatorInFuture.setRole(ChatRole.ROLE_MODERATOR);
+
             this.userInChatRepository.save(moderatorInFuture);
+            log.info("{} назначен модератором.", user.getUsername());
         } else if ((admin.getRole() == ChatRole.ROLE_ADMIN || moderatorInFuture.getRole() == ChatRole.ROLE_MODERATOR) && doYouModerator) {
             moderatorInFuture.setRole(ChatRole.ROLE_USER);
+
             this.userInChatRepository.save(moderatorInFuture);
+            log.info("{} понижен до юзера.", user.getUsername());
         } else {
             throw new YouDontHavePermissionExceptiom("You don't have permission");
         }
@@ -67,8 +81,10 @@ public class UserOperate {
             this.userInChatRepository.findAllByUserAndInChat(user, true)
                     .forEach(t -> {
                         t.setInChat(false);
-                        t.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusMinutes(45)));
+                        t.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusYears(1)));
                     });
+
+            log.info("{} был забанен.", user.getUsername());
         }
     }
     public void ban(Principal principal, String username, Long minutes) {
@@ -82,6 +98,8 @@ public class UserOperate {
                         t.setInChat(false);
                         t.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusMinutes(minutes)));
                     });
+
+            log.info("{} был забанен на {} минут.", user.getUsername(), minutes);
         }
     }
 }

@@ -26,14 +26,19 @@ public class YouTubeOperate {
     private final String APPLICATION_NAME = "youtube-cmdline-search-sample";
     private final String LINK_FORM = "https://www.youtube.com/watch?v=";
 
+    private YouTube getAuthentication() {
+        return new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpRequestInitializer() {
+            public void initialize(HttpRequest request) throws IOException {
+            }
+        }).setApplicationName(APPLICATION_NAME).build();
+
+    }
+
     public String get(String nameVideo, String nameChannel, boolean flagViews, boolean flagLikes) throws IOException {
         String id = null;
         String result = "Video not found";
 
-        YouTube youtubeService = new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY, new HttpRequestInitializer() {
-            public void initialize(HttpRequest request) throws IOException {
-            }
-        }).setApplicationName(APPLICATION_NAME).build();
+        YouTube youtubeService = this.getAuthentication();
 
         YouTube.Search.List request = youtubeService.search()
                 .list("snippet");
