@@ -20,28 +20,50 @@ public class YouTubeOperate {
 
     public String findVideoId(String videoName, String channelName) throws IOException {
         String id = null;
-        List<SearchResult> foundVideos = this.findListVideos(videoName);
+        List<SearchResult> foundVideos = this.findListVideosBy(videoName);
 
         for (SearchResult video : foundVideos) {
             String newVideoName = this.getVideoNameFrom(video);
             String newChannelName = this.getChannelNameFrom(video);
 
             if (newVideoName.equals(videoName) && newChannelName.equals(channelName)) {
-                id = this.getIdFrom(video);
+                id = this.getVideoIdFrom(video);
                 break;
             }
         }
 
+        if (id == null)
+            id = this.getVideoIdFrom(foundVideos.get(0));
+
         return id;
     }
 
-    private String getChannelNameFrom(SearchResult video) {
+    public String findChannelIdInYouTube(String channelName) throws IOException {
+        String id = null;
+        List<SearchResult> foundVideos = this.findListVideosBy(channelName);
+
+        for (SearchResult video : foundVideos) {
+            String newChannelName = this.getChannelNameFrom(video);
+
+            if (newChannelName.equals(channelName)) {
+                id = this.getChannelIdFrom(video);
+                break;
+            }
+        }
+
+        if (id == null)
+            id = this.getChannelIdFrom(foundVideos.get(0));
+
+        return id;
+    }
+
+    private String getChannelIdFrom(SearchResult video) {
         return new JsonParser()
                 .parse(video.toString())
                 .getAsJsonObject()
                 .get("snippet")
                 .getAsJsonObject()
-                .get("title")
+                .get("channelId")
                 .getAsString();
     }
 
@@ -51,21 +73,31 @@ public class YouTubeOperate {
                 .getAsJsonObject()
                 .get("snippet")
                 .getAsJsonObject()
+                .get("title")
+                .getAsString();
+    }
+
+    private String getChannelNameFrom(SearchResult video) {
+        return new JsonParser()
+                .parse(video.toString())
+                .getAsJsonObject()
+                .get("snippet")
+                .getAsJsonObject()
                 .get("channelTitle")
                 .getAsString();
     }
 
-    private List<SearchResult> findListVideos(String videoName) throws IOException {
+    private List<SearchResult> findListVideosBy(String videoOrChannelName) throws IOException {
         return youTube.search()
                 .list("snippet")
                 .setKey(KEY)
                 .setMaxResults(25L)
-                .setQ(videoName)
+                .setQ(videoOrChannelName)
                 .execute()
                 .getItems();
     }
 
-    private String getIdFrom(SearchResult video) {
+    private String getVideoIdFrom(SearchResult video) {
         return new JsonParser()
                 .parse(video.toString())
                 .getAsJsonObject()
@@ -84,9 +116,9 @@ public class YouTubeOperate {
                 .setId(id)
                 .execute();
 
-        return (new JsonParser()
+        return new JsonParser()
                 .parse(responseVid.toString())
-                .getAsJsonObject())
+                .getAsJsonObject()
                 .get("items")
                 .getAsJsonObject()
                 .get("statistics")
@@ -105,9 +137,9 @@ public class YouTubeOperate {
                 .setId(id)
                 .execute();
 
-        return (new JsonParser()
+        return new JsonParser()
                 .parse(responseVid.toString())
-                .getAsJsonObject())
+                .getAsJsonObject()
                 .get("items")
                 .getAsJsonObject()
                 .get("statistics")
