@@ -1,14 +1,16 @@
 package ru.chat.service.chat_bot;
 
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.SearchResult;
 import com.google.api.services.youtube.model.VideoListResponse;
-import com.google.gson.JsonParser;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -58,33 +60,15 @@ public class YouTubeOperate {
     }
 
     private String getChannelIdFrom(SearchResult video) {
-        return new JsonParser()
-                .parse(video.toString())
-                .getAsJsonObject()
-                .get("snippet")
-                .getAsJsonObject()
-                .get("channelId")
-                .getAsString();
+        return video.getSnippet().getChannelId();
     }
 
     private String getVideoNameFrom(SearchResult video) {
-        return new JsonParser()
-                .parse(video.toString())
-                .getAsJsonObject()
-                .get("snippet")
-                .getAsJsonObject()
-                .get("title")
-                .getAsString();
+        return video.getSnippet().getTitle();
     }
 
     private String getChannelNameFrom(SearchResult video) {
-        return new JsonParser()
-                .parse(video.toString())
-                .getAsJsonObject()
-                .get("snippet")
-                .getAsJsonObject()
-                .get("channelTitle")
-                .getAsString();
+        return video.getSnippet().getChannelTitle();
     }
 
     private List<SearchResult> findListVideosBy(String videoOrChannelName) throws IOException {
@@ -98,38 +82,27 @@ public class YouTubeOperate {
     }
 
     private String getVideoIdFrom(SearchResult video) {
-        return new JsonParser()
-                .parse(video.toString())
-                .getAsJsonObject()
-                .get("snippet")
-                .getAsJsonObject()
-                .get("title")
-                .getAsString();
+        return video.getId().getVideoId();
     }
 
     public String getLikesBy(String id) throws IOException {
         VideoListResponse responseVid = youTube
                 .videos()
-                .list("snippet,contentDetails,statistics")
+                .list("statistics")
                 .setKey(KEY)
                 .setPart("statistics")
                 .setId(id)
                 .execute();
 
-        return new JsonParser()
-                .parse(responseVid.toString())
-                .getAsJsonObject()
-                .get("items")
-                .getAsJsonObject()
-                .get("statistics")
-                .getAsJsonObject()
-                .get("likeCount")
-                .getAsString();
-
+        return responseVid.getItems()
+                .get(0)
+                .getStatistics()
+                .getLikeCount()
+                .toString();
     }
 
     public String getViewsBy(String id) throws IOException {
-        VideoListResponse responseVid = youTube
+        VideoListResponse response = youTube
                 .videos()
                 .list("snippet,contentDetails,statistics")
                 .setKey(KEY)
@@ -137,16 +110,39 @@ public class YouTubeOperate {
                 .setId(id)
                 .execute();
 
-        return new JsonParser()
-                .parse(responseVid.toString())
-                .getAsJsonObject()
-                .get("items")
-                .getAsJsonObject()
-                .get("statistics")
-                .getAsJsonObject()
-                .get("viewCount")
-                .getAsString();
+        return response.getItems()
+                .get(0)
+                .getStatistics()
+                .getViewCount()
+                .toString();
+    }
 
+    public String findPlaylistId(String channelId) throws IOException {
+        ChannelListResponse response = youTube.channels()
+                .list("contentDetails")
+                .setId(channelId)
+                .setKey(KEY)
+                .execute();
+        
+        return response.getItems()
+                .get(0)
+                .getContentDetails()
+                .getRelatedPlaylists()
+                .getUploads();
+    }
+
+    public List<String> findArrIdBy(String lastVidPlaylistId) throws IOException {
+       List<PlaylistItem> response = youTube.playlistItems()
+                .list("contentDetails")
+                .setMaxResults(5L)
+                .setKey(KEY)
+                .setPlaylistId("UUxqkOxQYocXRtSqlotgXh7w")
+                .execute()
+                .getItems();
+
+       return response.stream()
+               .map(video -> video.getContentDetails().getVideoId())
+               .collect(Collectors.toList());
     }
 }
 

@@ -247,8 +247,11 @@ public class ChatBotService {
                 if (channelId == null) return DEFAULT_BAD_RESPONSE;
 
                 var lastVidPlaylistId = this.youTubeOperate.findPlaylistId(channelName);
-                List<String> videosId = this.youTubeOperate.findArrIdBy(lastVidPlaylistId);
+                var idStr = new StringBuilder();
+                this.youTubeOperate.findArrIdBy(lastVidPlaylistId).stream()
+                        .forEach(id -> idStr.append(LINK_FORM + id + "\n"));
 
+                return ResponseEntity.ok(List.of(new MessageSendResponseDTO(channelName), new MessageSendResponseDTO(idStr.toString())));
 
             default:
                 return ResponseEntity.ok(List.of(new MessageSendResponseDTO("Invalid operation")));
