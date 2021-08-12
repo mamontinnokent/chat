@@ -13,6 +13,7 @@ import java.security.Principal;
 @AllArgsConstructor
 public class ChatBotService {
 
+    private final String LINK_FORM = "https://www.youtube.com/watch?v=";
     private static final String INFO =
             "Комнаты:\n" +
                     "1. //room create {Название комнаты} - создает комнаты;\n" +
@@ -54,11 +55,11 @@ public class ChatBotService {
 
         switch (operand) {
             case "//room":
-                return this.roomOperate(message, principal);
+                return this.room(message, principal);
             case "//user":
-                return this.userOperate(message, principal);
+                return this.user(message, principal);
             case "//yBot":
-                return this.youTubeOperate(message, principal);
+                return this.youTube(message, principal);
             case "//help":
                 return INFO;
             default:
@@ -77,7 +78,7 @@ public class ChatBotService {
     //   * 6. //room disconnect {Название комнаты} - выйти из заданной комнаты
     //   *      -l {login пользователя} - выгоняет пользователя из комнаты (для владельца, модератора и админа).
     //   *      -m {Количество минут} - время на которое пользователь не сможет войти (для владельца, модератора и админа).
-    public String roomOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+    public String room(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
         String[] arrRequest = message.getContent().split(" ");
         String request = message.getContent();
         String operation = arrRequest[1];
@@ -138,7 +139,7 @@ public class ChatBotService {
     //   * 3. //user moderator {login пользователя} - действия над модераторами.
     //   *      -n - назначить пользователя модератором.
     //   *      -d - “разжаловать” пользователя.
-    public String userOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+    public String user(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
         var arrRequest = message.getContent().split(" ");
         var request = message.getContent();
         var operation = arrRequest[1];
@@ -177,22 +178,38 @@ public class ChatBotService {
     //  *            -v - выводит количество текущих просмотров.
     //  *            -l - выводит количество лайков под видео.
     //  *  2. //yBot help - список доступных команд для взаимодействия.
-    public String youTubeOperate(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom, IOException {
+    public String youTube(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom, IOException {
         var arrReq = message.getContent().split(" ");
-        var names = arrReq[2].split("||");
+
         if (arrReq[1] == "help")
             return "//yBot find {название канала}||{название видео} - в ответ бот присылает ссылку на ролик\n" +
                     "-v - выводит количество текущих просмотров. //yBot find {название канала}||{название видео} -v" +
                     "-l - выводит количество лайков под видео. //yBot find {название канала}||{название видео} -l";
         else if (arrReq.length <= 3) {
             var request = message.getContent();
+            var names = arrReq[2].split("||");
 
-            if (arrReq.length == 3)
-                return this.youTubeOperate.get(names[0], names[1], false, false);
-            else if (arrReq[3].equals("-v"))
-                return this.youTubeOperate.get(names[0], names[1], true, false);
-            else if (arrReq[3].equals("-l"))
-                return this.youTubeOperate.get(names[0], names[1], false, true);
+            if (arrReq.length == 3) {
+                String videoName = names[0];
+                String channelName = names[1];
+                String videoId = this.youTubeOperate.findVideoId(videoName, channelName);
+
+                return LINK_FORM + videoId;
+            } else if (arrReq[3].equals("-v")) {
+                String videoName = names[0];
+                String channelName = names[1];
+                String videoId = this.youTubeOperate.findVideoId(videoName, channelName);
+                String viewCount = this.youTubeOperate.getViewsBy(videoId);
+
+                return LINK_FORM + videoId + "\n" + viewCount;
+            }else if (arrReq[3].equals("-l")) {
+                String videoName = names[0];
+                String channelName = names[1];
+                String videoId = this.youTubeOperate.findVideoId(videoName, channelName);
+                String likesCount = this.youTubeOperate.getLikesBy(videoId);
+
+                return LINK_FORM + videoId + "\n" + likesCount;
+            }
         } else
             return "Invalid operation";
 
