@@ -12,6 +12,7 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -58,8 +59,8 @@ public class ChatBotService {
                     "-v - выводит количество текущих просмотров.\n" +
                     "-l - выводит количество лайков под видео.\n" +
                     "2. //yBot help - список доступных команд для взаимодействия.\n" +
-                    "3. //yBot changelInfo {имя канала}. - Первым сообщением от бота выводится имя канала, вторым - ссылки на последние 5 роликов\n" +
-                    "4. //yBot videoCommentRanom {имя канала}||{Название ролика} - Среди комментариев к ролику рандомно выбирается 1 - " +
+                    "3. //yBot channelInfo {имя канала}. - Первым сообщением от бота выводится имя канала, вторым - ссылки на последние 5 роликов\n" +
+                    "4. //yBot videoCommentRadnom {имя канала}||{Название ролика} - Среди комментариев к ролику рандомно выбирается 1 - " +
                     "Первым сообщением бот выводит login человека, который оставил этот комментарий - Вторым сообщением бот выводит сам комментарий\n";
 
     private final RoomOperate roomOperate;
@@ -95,7 +96,7 @@ public class ChatBotService {
     //   * 6. //room disconnect {Название комнаты} - выйти из заданной комнаты
     //   *      -l {login пользователя} - выгоняет пользователя из комнаты (для владельца, модератора и админа).
     //   *      -m {Количество минут} - время на которое пользователь не сможет войти (для владельца, модератора и админа).
-    public ResponseEntity<List<MessageSendResponseDTO>> room(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+    private ResponseEntity<List<MessageSendResponseDTO>> room(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
         String[] arrRequest = message.getContent().split(" ");
         String request = message.getContent();
         String operation = arrRequest[1];
@@ -156,7 +157,7 @@ public class ChatBotService {
     //   * 3. //user moderator {login пользователя} - действия над модераторами.
     //   *      -n - назначить пользователя модератором.
     //   *      -d - “разжаловать” пользователя.
-    public ResponseEntity<List<MessageSendResponseDTO>> user(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
+    private ResponseEntity<List<MessageSendResponseDTO>> user(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom {
         var arrRequest = message.getContent().split(" ");
         var request = message.getContent();
         var operation = arrRequest[1];
@@ -196,22 +197,23 @@ public class ChatBotService {
     //   *           -l - выводит количество лайков под видео.
     //   * 2. //yBot help - список доступных команд для взаимодействия.
     //   * 3. //yBot channelInfo {имя канала}. - Первым сообщением от бота выводится имя канала, вторым - ссылки на последние 5 роликов
-    //   * 4. //yBot videoCommentRanom {имя канала}||{Название ролика} - Среди комментариев к ролику рандомно выбирается 1 -
+    //   * 4. //yBot videoCommentRandom {имя канала}||{Название ролика} - Среди комментариев к ролику рандомно выбирается 1 -
     //   *           Первым сообщением бот выводит login человека, который оставил этот комментарий - Вторым сообщением бот выводит сам комментарий
-    public ResponseEntity<List<MessageSendResponseDTO>> youTube(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom, IOException {
+    private ResponseEntity<List<MessageSendResponseDTO>> youTube(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom, IOException {
         var arrReq = message.getContent().split(" ");
         var operate = arrReq[0];
+        String[] names;
 
         switch (operate) {
             case "help":
                 return ResponseEntity.ok(List.of(new MessageSendResponseDTO(YOUTUBE_INFO)));
             case "find":
-                var names = arrReq[2].split("||");
+                names = arrReq[2].split("||");
 
                 if (arrReq.length == 3) {
                     var videoName = names[0];
                     var channelName = names[1];
-                    var videoId = this.youTubeOperate.findVideoId(videoName, channelName);
+                    var videoId = this.youTubeOperate.findVideoIdBy(videoName, channelName);
                     if (videoId == null) return DEFAULT_BAD_RESPONSE;
 
 
@@ -221,7 +223,7 @@ public class ChatBotService {
                 } else if (arrReq[3].equals("-v")) {
                     var videoName = names[0];
                     var channelName = names[1];
-                    var videoId = this.youTubeOperate.findVideoId(videoName, channelName);
+                    var videoId = this.youTubeOperate.findVideoIdBy(videoName, channelName);
                     if (videoId == null) return DEFAULT_BAD_RESPONSE;
 
                     var viewCount = this.youTubeOperate.getViewsBy(videoId);
@@ -232,7 +234,7 @@ public class ChatBotService {
                 } else if (arrReq[3].equals("-l")) {
                     var videoName = names[0];
                     var channelName = names[1];
-                    var videoId = this.youTubeOperate.findVideoId(videoName, channelName);
+                    var videoId = this.youTubeOperate.findVideoIdBy(videoName, channelName);
                     if (videoId == null) return DEFAULT_BAD_RESPONSE;
 
                     var likesCount = this.youTubeOperate.getLikesBy(videoId);
@@ -242,7 +244,8 @@ public class ChatBotService {
                 }
 
             case "channelInfo":
-                var channelName = arrReq[2];
+                names = arrReq[2].split("||");
+                var channelName = names[0];
                 var channelId = this.youTubeOperate.findChannelIdInYouTube(channelName);
                 if (channelId == null) return DEFAULT_BAD_RESPONSE;
 
@@ -252,6 +255,18 @@ public class ChatBotService {
                         .forEach(id -> idStr.append(LINK_FORM + id + "\n"));
 
                 return ResponseEntity.ok(List.of(new MessageSendResponseDTO(channelName), new MessageSendResponseDTO(idStr.toString())));
+
+            case "videoCommentRandom":
+                names = arrReq[2].split("||");
+                var nameVideo = names[0];
+                var nameChannel = names[1];
+                var idVideo = this.youTubeOperate.findVideoIdBy(nameVideo, nameChannel);
+                if (idVideo == null) return DEFAULT_BAD_RESPONSE;
+
+                var comments = this.youTubeOperate.getComment(idVideo).stream()
+                        .map(msg -> new MessageSendResponseDTO(msg))
+                        .collect(Collectors.toList());
+                return ResponseEntity.ok(comments);
 
             default:
                 return ResponseEntity.ok(List.of(new MessageSendResponseDTO("Invalid operation")));
