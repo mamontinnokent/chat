@@ -72,4 +72,28 @@ public class MessageService {
             throw new YouDontHavePermissionExceptiom("You don't have permission");
         }
     }
+
+    public MessageSendRequestDTO save(MessageSendRequestDTO dto) throws YouDontHavePermissionExceptiom {
+        var user = this.userInChatRepository.getById(dto.getUserId());
+        var currentTime = Timestamp.valueOf(LocalDateTime.now());
+
+        // * Проверка заблокирован ли пользователь
+        if (user.getBlockedTime().before(currentTime)) {
+            var chat = chatRepository.getById(dto.getChatId());
+            var message = new Message(
+                    user.getUser().getUsername(),
+                    dto.getContent(),
+                    chat,
+                    user
+            );
+
+            user.getMessages().add(message);
+            this.messageRepository.save(message);
+            this.userInChatRepository.save(user);
+            log.info("{} отправил сообщение", user.getUser().getUsername());
+            return dto;
+        } else {
+            throw new YouDontHavePermissionExceptiom("You are banned");
+        }
+    }
 }
