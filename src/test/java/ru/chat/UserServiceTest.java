@@ -50,11 +50,11 @@ public class UserServiceTest {
             }
         };
 
-         return new UserService(
-                    userMapper,
-                    new UserRepositoryMock(),
-                    new UserInChatRepositoryMock()
-            );
+        return new UserService(
+                userMapper,
+                new UserRepositoryMock(),
+                new UserInChatRepositoryMock()
+        );
     }
 
     @Test
@@ -77,7 +77,6 @@ public class UserServiceTest {
             fail("Exception " + e.getMessage());
         }
     }
-
 
 
 }
