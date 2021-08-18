@@ -1,6 +1,7 @@
 package ru.chat.service;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Data
 @Slf4j
 @Service
 @Transactional
@@ -32,7 +34,7 @@ public class UserService {
     // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
         return this.userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException(""));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     public User create(UserRegRequestDTO userDTO) throws Exception {

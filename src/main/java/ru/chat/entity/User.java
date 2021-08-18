@@ -1,16 +1,14 @@
 package ru.chat.entity;
 
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import ru.chat.entity.enums.AppRole;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @Entity
 @NoArgsConstructor
 @Table(name = "user")

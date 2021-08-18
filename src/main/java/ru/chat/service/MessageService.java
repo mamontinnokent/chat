@@ -33,7 +33,7 @@ public class MessageService {
     // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
         return userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException(""));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     // * Отправка сообщений. Отправлять может только не заблокированный пользователь.

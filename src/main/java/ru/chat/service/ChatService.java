@@ -39,7 +39,7 @@ public class ChatService {
     // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
         return userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException(""));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     // * Создаём чатик и создаём объект UserInChat, чтобы у пользователя были права и статус создателя
