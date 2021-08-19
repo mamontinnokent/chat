@@ -1,5 +1,6 @@
 package ru.chat.mock;
 
+import lombok.Data;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,8 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Data
 public class UserRepositoryMock implements UserRepository {
-    List<User> listUser = new ArrayList<>();
+    private List<User> listUser = new ArrayList<>();
 
     @Override
     public Optional<User> findByEmail(String email) {
@@ -62,7 +64,7 @@ public class UserRepositoryMock implements UserRepository {
 
     @Override
     public long count() {
-        return 0;
+        return listUser.size();
     }
 
     @Override
@@ -92,9 +94,20 @@ public class UserRepositoryMock implements UserRepository {
 
     @Override
     public <S extends User> S save(S entity) {
+        var user = listUser.stream()
+                .filter(t -> t.getId() == entity.getId())
+                .findFirst()
+                .orElse(null);
+
+        if (user != null) {
+            user.setUsername(entity.getUsername());
+            user.setEmail(entity.getEmail());
+            return entity;
+        }
+
         listUser.add(entity);
         var index = String.valueOf(listUser.size() - 1);
-        var user = listUser.get(Integer.parseInt(index));
+        user = listUser.get(Integer.parseInt(index));
         user.setId(Long.parseLong(index) + 1);
 
         return (S) user;

@@ -149,7 +149,7 @@ public class ChatRepositoryMock implements ChatRepository {
     @Override
     public Chat getById(Long aLong) {
         return listChat.stream()
-                .filter(t -> t.getId().equals(aLong))
+                .filter(t -> t.getId() == aLong)
                 .findFirst()
                 .get();
     }

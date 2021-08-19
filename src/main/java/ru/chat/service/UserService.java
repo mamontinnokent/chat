@@ -6,9 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.chat.dto.request.UserRegRequestDTO;
-import ru.chat.dto.response.UserResponseDTO;
 import ru.chat.dto.request.UserUpdateRequestDTO;
+import ru.chat.dto.response.UserResponseDTO;
 import ru.chat.entity.User;
+import ru.chat.entity.UserInChat;
 import ru.chat.entity.enums.AppRole;
 import ru.chat.mapper.UserMapper;
 import ru.chat.repository.UserInChatRepository;
@@ -17,6 +18,7 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,11 +45,18 @@ public class UserService {
         return user;
     }
 
+    public User createAdmin(UserRegRequestDTO userDTO) throws Exception {
+        var user = this.userRepository.save(userMapper.createAdmin(userDTO));
+        log.info("{} был создан", user.getUsername());
+        return user;
+    }
+
     public UserResponseDTO getById(Long id) throws UsernameNotFoundException {
         var user = this.userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User with id - %d not found exception", id)));
+        List<UserInChat> list = this.userInChatRepository.findAllByUserAndInChat(user, true);
         log.info("Получен пользователь - {} с id - {}", user.getUsername(), id);
-        return userMapper.toUserResponseDTO(user);
+        return userMapper.toUserResponseDTO(user, list);
     }
 
     public Map<String, Long> getAll() {
@@ -92,8 +101,9 @@ public class UserService {
 
     public UserResponseDTO getCurrent(Principal principal) {
         var user = this.fromPrincipal(principal);
+        var list = this.userInChatRepository.findAllByUserAndInChat(user, true);
 
         log.info("{} зашёл в свой профиль", user.getUsername());
-        return this.userMapper.toUserResponseDTO(user);
+        return this.userMapper.toUserResponseDTO(user, list);
     }
 }
