@@ -69,7 +69,7 @@ public class UserRepositoryMock implements UserRepository {
 
     @Override
     public void deleteById(Long aLong) {
-        listUser.remove(aLong);
+        listUser.remove(aLong - 1);
     }
 
     @Override
@@ -102,7 +102,7 @@ public class UserRepositoryMock implements UserRepository {
         if (user != null) {
             user.setUsername(entity.getUsername());
             user.setEmail(entity.getEmail());
-            return entity;
+            return (S) user;
         }
 
         listUser.add(entity);

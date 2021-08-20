@@ -1,6 +1,7 @@
 package ru.chat.service;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Data
 @Slf4j
 @Service
 @Transactional
@@ -38,7 +40,7 @@ public class ChatService {
 
     // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
-        return userRepository.findByEmail(principal.getName())
+        return this.userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
@@ -56,6 +58,7 @@ public class ChatService {
                 userInChat.setRole(ChatRole.ROLE_ADMIN);
 
             this.userInChatRepository.save(userInChat);
+            this.userRepository.save(user);
             log.info("Чат {} был создан", chat.getNameChat());
         } else {
             // !  иначе пользователь заблокирован и кидается exception
@@ -64,7 +67,7 @@ public class ChatService {
     }
 
     // * Получаем все чатики для текущего юзера
-    public Map<String, Long> getAllForThisUser(Principal principal) {
+    public Map<String, Long> getAllForCurrent(Principal principal) {
         var user = this.fromPrincipal(principal);
         log.info("Пользователь получил свои чатики", user.getUsername());
         return this.userInChatRepository.findAllByUserAndInChat(user, true).stream()
@@ -96,11 +99,13 @@ public class ChatService {
     }
 
     // * Получаем текущий чатик из списка чатиков юзера
-    public ChatResponseDTO get(Long id) {
-        var user = this.userInChatRepository.getById(id);
-        ChatResponseDTO responseDTO = this.chatMapper.getFromChat(user.getChat());
+    public ChatResponseDTO get(Long id, Principal principal) {
+        var user = this.fromPrincipal(principal);
+        var chat = this.chatRepository.getById(id);
 
-        log.info("Для юзера {} получен чатик {}", user.getUser().getUsername(), user.getChat().getNameChat());
+        ChatResponseDTO responseDTO = this.chatMapper.getFromChat(chat);
+
+        log.info("Для юзера {} получен чатик {}",user.getUsername(), chat.getNameChat());
         return responseDTO;
     }
 

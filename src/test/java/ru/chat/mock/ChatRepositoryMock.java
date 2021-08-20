@@ -58,7 +58,7 @@ public class ChatRepositoryMock implements ChatRepository {
 
     @Override
     public long count() {
-        return 0;
+        return listChat.size();
     }
 
     @Override
@@ -89,9 +89,22 @@ public class ChatRepositoryMock implements ChatRepository {
 
     @Override
     public <S extends Chat> S save(S entity) {
+        var chat = listChat.stream()
+                .filter(t -> t.getId() == entity.getId())
+                .findFirst()
+                .orElse(null);
+
+        if (chat != null) {
+            chat.setNameChat(entity.getNameChat());
+            return (S) chat;
+        }
+
         listChat.add(entity);
-        entity.setId((long) listChat.size());
-        return entity;
+        var index = String.valueOf(listChat.size() - 1);
+        chat = listChat.get(Integer.parseInt(index));
+        chat.setId(Long.parseLong(index) + 1);
+
+        return (S) chat;
     }
 
     @Override
@@ -149,9 +162,9 @@ public class ChatRepositoryMock implements ChatRepository {
     @Override
     public Chat getById(Long aLong) {
         return listChat.stream()
-                .filter(t -> t.getId() == aLong)
+                .filter(t -> t.getId().equals(aLong))
                 .findFirst()
-                .get();
+                .orElse(null);
     }
 
     @Override

@@ -37,13 +37,13 @@ public class ChatControllerV1 {
     @GetMapping
     @Operation(summary = "Все чаты для текущего пользователя")
     public ResponseEntity<?> getAllForThisUser(Principal principal) {
-        return ResponseEntity.ok(this.chatService.getAllForThisUser(principal));
+        return ResponseEntity.ok(this.chatService.getAllForCurrent(principal));
     }
 
     @GetMapping("{id}")
     @Operation(summary = "Получение чата по id")
-    public ResponseEntity<?> get(@PathVariable Long id) {
-        return ResponseEntity.ok(this.chatService.get(id));
+    public ResponseEntity<?> get(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(this.chatService.get(id, principal));
     }
 
     @GetMapping("all")

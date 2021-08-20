@@ -3,8 +3,7 @@ package ru.chat;
 //
 //@Slf4j
 //@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-//public class ChatBotServiceTest {
-//
+//public class MessageServiceTest {
 //    public static ChatService chatService;
 //
 //    @BeforeAll
@@ -28,5 +27,4 @@ package ru.chat;
 //            fail("Exception " + e.getMessage());
 //        }
 //    }
-//
 //}

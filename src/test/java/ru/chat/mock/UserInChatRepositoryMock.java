@@ -37,7 +37,7 @@ public class UserInChatRepositoryMock implements UserInChatRepository {
         return listUserInChat.stream()
                 .filter(t -> t.getUser().equals(user) && t.getChat().equals(chat))
                 .findFirst()
-                .get();
+                .orElse(null);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class UserInChatRepositoryMock implements UserInChatRepository {
 
     @Override
     public long count() {
-        return 0;
+        return listUserInChat.size();
     }
 
     @Override
@@ -163,7 +163,7 @@ public class UserInChatRepositoryMock implements UserInChatRepository {
         return listUserInChat.stream()
                 .filter(t -> t.getId().equals(aLong))
                 .findFirst()
-                .get();
+                .orElse(null);
     }
 
     @Override

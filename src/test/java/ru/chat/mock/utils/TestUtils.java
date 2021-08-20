@@ -13,9 +13,11 @@ import ru.chat.entity.enums.ChatRole;
 import ru.chat.mapper.ChatMapper;
 import ru.chat.mapper.UserMapper;
 import ru.chat.mock.ChatRepositoryMock;
+import ru.chat.mock.MessageRepositoryMock;
 import ru.chat.mock.UserInChatRepositoryMock;
 import ru.chat.mock.UserRepositoryMock;
 import ru.chat.service.ChatService;
+import ru.chat.service.MessageService;
 import ru.chat.service.UserService;
 
 import java.security.Principal;
@@ -26,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 
 public class TestUtils {
+    private static ChatRepositoryMock chatRepositoryMock = new ChatRepositoryMock();
+    private static UserRepositoryMock userRepositoryMock = new UserRepositoryMock();
+    private static MessageRepositoryMock messageRepositoryMock = new MessageRepositoryMock();
+    private static UserInChatRepositoryMock userInChatRepositoryMock = new UserInChatRepositoryMock();
 
     public static Principal getPrincipal(String email) {
         return new Principal() {
@@ -83,8 +89,8 @@ public class TestUtils {
 
         return new UserService(
                 userMapper,
-                new UserRepositoryMock(),
-                new UserInChatRepositoryMock()
+                userRepositoryMock,
+                userInChatRepositoryMock
         );
     }
 
@@ -147,8 +153,8 @@ public class TestUtils {
                     List<MessageResponseDTO> list1 = new ArrayList(list.size());
                     Iterator var3 = list.iterator();
 
-                    while(var3.hasNext()) {
-                        Message message = (Message)var3.next();
+                    while (var3.hasNext()) {
+                        Message message = (Message) var3.next();
                         list1.add(this.getFromMessage(message));
                     }
 
@@ -159,9 +165,18 @@ public class TestUtils {
 
         return new ChatService(
                 chatMapper,
-                new ChatRepositoryMock(),
-                new UserRepositoryMock(),
-                new UserInChatRepositoryMock()
+                chatRepositoryMock,
+                userRepositoryMock,
+                userInChatRepositoryMock
+        );
+    }
+
+    public static MessageService initMessageService() {
+        return new MessageService(
+                userRepositoryMock,
+                chatRepositoryMock,
+                messageRepositoryMock,
+                userInChatRepositoryMock
         );
     }
 }

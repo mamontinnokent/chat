@@ -8,6 +8,7 @@ import ru.chat.dto.response.UserResponseDTO;
 import ru.chat.entity.User;
 import ru.chat.entity.enums.AppRole;
 import ru.chat.mock.utils.TestUtils;
+import ru.chat.service.ChatService;
 import ru.chat.service.UserService;
 import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
@@ -20,10 +21,12 @@ import static org.fest.assertions.Fail.fail;
 public class UserServiceTest {
 
     public static UserService userService;
+    public static ChatService chatService;
 
     @BeforeAll
     public void initUserService() {
         this.userService = TestUtils.initUserService();
+        this.chatService = TestUtils.initChatService();
     }
 
     @Test
