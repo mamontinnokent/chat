@@ -1,7 +1,6 @@
 package ru.chat.service;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -23,10 +22,11 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Data
+
 @Slf4j
 @Service
 @Transactional
@@ -57,9 +57,9 @@ public class ChatService {
             if (user.getRole() == AppRole.ROLE_ADMIN)
                 userInChat.setRole(ChatRole.ROLE_ADMIN);
 
-            this.userInChatRepository.save(userInChat);
-            this.userRepository.save(user);
+            var save = this.userInChatRepository.save(userInChat);
             log.info("Чат {} был создан", chat.getNameChat());
+
         } else {
             // !  иначе пользователь заблокирован и кидается exception
             throw new YouDontHavePermissionExceptiom("You are blocked");
@@ -67,11 +67,11 @@ public class ChatService {
     }
 
     // * Получаем все чатики для текущего юзера
-    public Map<String, Long> getAllForCurrent(Principal principal) {
+    public List<UserInChat> getAllForCurrent(Principal principal) {
         var user = this.fromPrincipal(principal);
         log.info("Пользователь получил свои чатики", user.getUsername());
-        return this.userInChatRepository.findAllByUserAndInChat(user, true).stream()
-                .collect(Collectors.toMap(k -> k.getChat().getNameChat(), v -> v.getId()));
+        return this.userInChatRepository.findAllByUserAndInChat(user, true);
+//                .collect(Collectors.toMap(k -> k.getChat().getNameChat(), v -> v.getId()));
     }
 
 
@@ -125,7 +125,7 @@ public class ChatService {
 
         // * Если юзер уже был в чатике, то просто обновляем статус
         if (userInChat == null) {
-            userInChat = this.chatMapper.create(user, chat);
+            userInChat = this.chatMapper.addToChat(user, chat);
 
             // * Если юзер админ в приложении, то он и в чатике админ
             if (user.getRole() == AppRole.ROLE_ADMIN)

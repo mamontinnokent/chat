@@ -85,7 +85,7 @@ public class MessageService {
                     dto.getContent(),
                     chat,
                     user
-            );
+            ) ;
 
             user.getMessages().add(message);
             this.messageRepository.save(message);

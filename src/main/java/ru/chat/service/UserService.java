@@ -1,7 +1,6 @@
 package ru.chat.service;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -18,11 +17,10 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-@Data
 @Slf4j
 @Service
 @Transactional
@@ -61,8 +59,12 @@ public class UserService {
 
     public Map<String, Long> getAll() {
         log.info("Получены все пользователи");
-        return userRepository.findAll().stream()
-                .collect(Collectors.toMap(k -> k.getUsername(), v -> v.getId()));
+        var listUsers = this.userRepository.findAll();
+        var map = new HashMap<String, Long>();
+        listUsers.stream()
+                .forEach(usr -> map.put(usr.getUsername(), usr.getId()));
+
+        return map;
     }
 
     // * удаление других пользователей для админов приложения
@@ -88,15 +90,14 @@ public class UserService {
     }
 
     public UserUpdateRequestDTO update(UserUpdateRequestDTO userDTO, Principal principal) {
-        var user = this.fromPrincipal(principal);
+        var user = this.fromPrincipal(principal)
+                .setEmail(userDTO.getEmail())
+                .setUsername(userDTO.getUsername());
 
-        user.setEmail(userDTO.getEmail());
-        user.setUsername(userDTO.getUsername());
-
-        this.userRepository.save(user);
+        var newUser = this.userRepository.save(user);
 
         log.info("{} был обновлён", userDTO.getUsername());
-        return userDTO;
+        return new UserUpdateRequestDTO(newUser.getUsername(), newUser.getEmail());
     }
 
     public UserResponseDTO getCurrent(Principal principal) {

@@ -6,7 +6,8 @@ import ru.chat.entity.enums.AppRole;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -32,6 +33,6 @@ public class User {
 
     private AppRole role = AppRole.ROLE_USER;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<UserInChat> chats;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<UserInChat> chats = new HashSet<>();
 }

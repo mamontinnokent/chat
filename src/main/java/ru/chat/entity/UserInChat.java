@@ -1,5 +1,6 @@
 package ru.chat.entity;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import ru.chat.entity.enums.ChatRole;
@@ -10,10 +11,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@Table
 @Entity
 @Getter
 @Setter
-@Table
 public class UserInChat {
 
     @Id
@@ -38,7 +40,7 @@ public class UserInChat {
     private List<Message> messages = new ArrayList<>();
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         kickedTime = Timestamp.valueOf(LocalDateTime.now());
         blockedTime = Timestamp.valueOf(LocalDateTime.now());
     }
