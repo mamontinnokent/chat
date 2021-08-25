@@ -30,13 +30,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-
 
         <!-- Валидация -->
         <dependency>
@@ -91,12 +84,6 @@
             <version>3.1.1-1</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -105,12 +92,20 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- MySql driver -->
+        <!-- DB drivers -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.200</version>
+            <scope>test</scope>
+        </dependency>
+
 
         <!-- Lombok -->
         <dependency>
@@ -118,6 +113,7 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
 
         <!-- Security -->
         <dependency>

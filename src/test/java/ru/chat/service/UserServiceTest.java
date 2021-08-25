@@ -1,7 +1,10 @@
 package ru.chat.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -11,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.chat.dto.request.UserRegRequestDTO;
 import ru.chat.dto.request.UserUpdateRequestDTO;
+import ru.chat.entity.User;
 import ru.chat.entity.UserInChat;
+import ru.chat.entity.enums.AppRole;
 import ru.chat.mapper.UserMapper;
 import ru.chat.repository.UserInChatRepository;
 import ru.chat.repository.UserRepository;
@@ -94,7 +99,11 @@ class UserServiceTest {
     @DisplayName("UserService. Проверка получения по id.")
     void getById() {
         final var dto = new UserRegRequestDTO("test@gmail.com", "test", "test");
-        final var userForGet = testUtils.getUserMapper().create(dto).setId(1L);
+        final var userForGet = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        );
         final var list = new ArrayList<UserInChat>();
 
         Mockito
@@ -113,7 +122,7 @@ class UserServiceTest {
 
 
         Assertions.assertEquals(1L, got.getId());
-        Assertions.assertEquals("test", got.getUsername());
+        Assertions.assertEquals("user1", got.getUsername());
         Assertions.assertEquals(new HashMap<String, Long>(), got.getChats());
     }
 
@@ -121,16 +130,23 @@ class UserServiceTest {
     @DisplayName("UserService. Проверка получения по получение всех юзеров.")
     void getAll() {
         final var mapper = testUtils.getUserMapper();
-        final var listUsers = testUtils.userList;
+        final var user = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        );
+
+        final var listUsers = new ArrayList<User>();
+        listUsers.add(user);
+
         var map = new HashMap<String,Long>();
-        listUsers.forEach(usr -> map.put(usr.getUsername(), usr.getId()));
+        map.put(user.getUsername(), user.getId());
 
         Mockito
                 .when(userRepository.findAll())
                 .thenReturn(listUsers);
 
         var got = userService.getAll();
-        log.info(got.toString());
 
         Assertions.assertEquals(map, got);
     }
@@ -138,8 +154,12 @@ class UserServiceTest {
     @Test
     @DisplayName("UserService. Проверка удаления себя.")
     void delete() {
-        var user = testUtils.userList.get(1);
-        var email = user.getEmail();
+        String email = "test@gmail.com";
+        var user = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                email
+        );;
         var principal = testUtils.getPrincipal(email);
 
         Mockito
@@ -153,7 +173,11 @@ class UserServiceTest {
     @Test
     @DisplayName("UserService. Проверка удаления другого пользователя обычным пользователем.")
     void testDeleteByUser() {
-        var admin = testUtils.userList.get(1);
+        var admin = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        );;
         var emailAdmin = admin.getEmail();
         var principal = testUtils.getPrincipal(emailAdmin);
 
@@ -173,7 +197,11 @@ class UserServiceTest {
     @Test
     @DisplayName("UserService. Проверка удаления другого пользователя админом.")
     void testDeleteByAdmin() {
-        var admin = testUtils.userList.get(0);
+        var admin = testUtils.getUser(
+                2l,
+                AppRole.ROLE_ADMIN,
+                "admin@gmail.com"
+        );
         var emailAdmin = admin.getEmail();
         var principal = testUtils.getPrincipal(emailAdmin);
 
@@ -181,7 +209,12 @@ class UserServiceTest {
                 .when(userRepository.findByEmail(emailAdmin))
                 .thenReturn(Optional.of(admin));
 
-        var user = testUtils.userList.get(2);
+        var user = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        );
+
         Mockito
                 .when(userRepository.getById(3l))
                 .thenReturn(user);
@@ -199,7 +232,12 @@ class UserServiceTest {
     @DisplayName("UserService. Проверка обновления пользователя.")
     void update() {
         var testRequest = new UserUpdateRequestDTO("teeest", "teeest@gmail.com");
-        var user = testUtils.userList.get(1);
+        var user =  testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        );
+
         String email = "test1@gmail.com";
         Mockito
                 .when(userRepository.findByEmail(email))
@@ -224,7 +262,12 @@ class UserServiceTest {
 
     @Test
     void getCurrent() {
-        var user = testUtils.userList.get(1);
+        var user = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        );
+
         var email = user.getEmail();
         var principal = testUtils.getPrincipal(email);
 

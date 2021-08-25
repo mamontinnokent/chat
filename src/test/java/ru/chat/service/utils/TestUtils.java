@@ -1,8 +1,7 @@
 package ru.chat.service.utils;
 
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.chat.dto.request.UserRegRequestDTO;
 import ru.chat.dto.response.ChatResponseDTO;
@@ -19,26 +18,16 @@ import ru.chat.mapper.UserMapper;
 
 import java.security.Principal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 public class TestUtils {
 
-    public List<User> userList;
-    public List<Chat> chatList;
-    public List<UserInChat> userInChatList;
-
-    public TestUtils() {
-        setUsers();
-        setChats();
-
-    }
+    private int iterator = 0;
 
     public UserMapper getUserMapper() {
         return new UserMapper() {
@@ -191,77 +180,38 @@ public class TestUtils {
         };
     }
 
-    public void setUsers() {
-        UserMapper mapper = getUserMapper();
-        userList = List.of(
-                mapper.createAdmin(new UserRegRequestDTO("admin@gmail.com", "admin", "admin")).setId(1l),
-                mapper.create(new UserRegRequestDTO("test1@gmail.com", "test1", "test")).setId(2l),
-                mapper.create(new UserRegRequestDTO("test2@gmail.com", "test2", "test")).setId(3l),
-                mapper.create(new UserRegRequestDTO("test3@gmail.com", "test3", "test")).setId(4l),
-                mapper.create(new UserRegRequestDTO("test4@gmail.com", "test4", "test")).setId(5l),
-                mapper.create(new UserRegRequestDTO("test5@gmail.com", "test5", "test")).setId(6l)
-        );
+    public User getUser(Long id, AppRole role, String email) {
+        return new User()
+                .setId(id)
+                .setUsername("user" + id)
+                .setEmail(email)
+                .setPassword(new BCryptPasswordEncoder(12).encode("test"))
+                .setBlocked(false)
+                .setRole(role);
     }
 
-    private void setChats() {
-        var mapper = getChatMapper();
-        chatList = List.of(
-            new Chat("test_chat_open_1", false),
-            new Chat("test_chat_open_2", false),
-            new Chat("test_chat_open_3", false),
-            new Chat("test_chat_close_1", true),
-            new Chat("test_chat_close_2", true),
-            new Chat("test_chat_close_3", true)
-        );
-
-        AtomicInteger iterator = new AtomicInteger(0);
-        userInChatList = chatList.stream().map(chat -> {
-            var i = iterator.getAndIncrement();
-            chat.setId((long) (i + 1));
-
-            var user = this.userList.get(i);
-            var userAndChat = mapper.create(user, chat);
-            userAndChat.onCreate();
-            user.getChats().add(userAndChat);
-
-            return userAndChat;
-        }).collect(Collectors.toList());
-
-
-        userList.forEach(user -> {
-            var itr = new AtomicInteger(1);
-            chatList.forEach(chat -> {
-                if (!doYouIn(chat, user)) {
-                    var newUserInChat = mapper.addToChat(user, chat)
-                            .setId((long) userInChatList.size() + 1l);
-                    newUserInChat.onCreate();
-
-                    if (user.getRole() == AppRole.ROLE_ADMIN)
-                        newUserInChat.setRole(ChatRole.ROLE_ADMIN);
-
-                    userInChatList.add(newUserInChat);
-                }
-            });
-        });
+    public UserInChat getUIC(Long id, ChatRole role, Chat chat, User user) {
+        return new UserInChat()
+                .setId(id)
+                .setInChat(true)
+                .setBlockedTime(Timestamp.valueOf(LocalDateTime.now()))
+                .setKickedTime(Timestamp.valueOf(LocalDateTime.now()))
+                .setUser(user)
+                .setChat(chat)
+                .setRole(role);
     }
 
-    public List<UserInChat> getById(Long id, Boolean inChat) {
-        var user = userList.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public Chat createChat(Long id, User creator, boolean privacy) {
+        var chat = new Chat()
+                .setId(id)
+                .setNameChat("chat" + id)
+                .setPrivacy(privacy)
+                .setCreationDate(Timestamp.valueOf(LocalDateTime.now()));
 
-        log.info(userInChatList.toString());
-        log.info(chatList.toString());
-        return userInChatList
-                .stream()
-                .filter(uic -> uic.getUser().equals(user) && inChat.equals(uic.isInChat()))
-                .collect(Collectors.toList());
-    }
+        var uic = getUIC(1l, ChatRole.ROLE_CREATOR, chat, creator);
 
-    private boolean doYouIn(Chat chat, User user) {
-        return userInChatList
-                .stream()
-                .anyMatch(uic -> uic.getChat().equals(chat) && uic.getUser().equals(user));
+        chat.getMembers().add(uic);
+        creator.getChats().add(uic);
+        return chat;
     }
 }

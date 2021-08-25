@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.chat.dto.request.ChatCreateRequestDTO;
 import ru.chat.entity.Chat;
+import ru.chat.entity.enums.AppRole;
 import ru.chat.mapper.ChatMapper;
 import ru.chat.repository.ChatRepository;
 import ru.chat.repository.UserInChatRepository;
@@ -22,7 +23,7 @@ import ru.chat.service.utils.TestUtils;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
 
 
 @Slf4j
@@ -53,7 +54,11 @@ class ChatServiceTest {
     @Test
     @DisplayName("ChatService. Проверка создания чат не заблокированным пользователем")
     void createBySimpleUser() {
-        final var user = testUtils.userList.get(1);
+        final var user = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        );
         final var principal = testUtils.getPrincipal(user.getEmail());
         final var dto = new ChatCreateRequestDTO("test_chat", false);
         final var chat = new Chat(dto.getName(), dto.isPrivacy());
@@ -67,8 +72,10 @@ class ChatServiceTest {
                 .when(chatRepository.save(chat))
                 .thenReturn(chatWithId);
 
+
         var userInChat = testUtils.getChatMapper().create(user, chat);
         var userInChatWithId = testUtils.getChatMapper().create(user, chat).setId(1L);
+
         Mockito
                 .when(chatMapper.create(user, chatWithId))
                 .thenReturn(userInChat);
@@ -91,7 +98,11 @@ class ChatServiceTest {
     @Test
     @DisplayName("ChatService. Проверка создания чат заблокированным пользователем")
     void createByBlockedUser() {
-        final var user = testUtils.userList.get(1).setBlocked(true);
+        final var user = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        ).setBlocked(true);
         final var principal = testUtils.getPrincipal(user.getEmail());
         final var dto = new ChatCreateRequestDTO("test_chat", false);
 
@@ -113,7 +124,12 @@ class ChatServiceTest {
     @Test
     @DisplayName("ChatService. Проверка создание чата заблокированным пользователем")
     void getAllForCurrent() {
-        var user = testUtils.userList.get(1);
+        var user = testUtils.getUser(
+                1l,
+                AppRole.ROLE_USER,
+                "test@gmail.com"
+        ).setBlocked(true);
+
         var email = user.getEmail();
         var principal = testUtils.getPrincipal(email);
         Mockito
@@ -122,7 +138,7 @@ class ChatServiceTest {
 
         Mockito
                 .when(userInChatRepository.findAllByUserAndInChat(user, true))
-                .thenReturn(testUtils.getById(user.getId(), true));
+                .thenReturn();
 
         var print = testUtils.getById(user.getId(), true);
         var variable = chatService.getAllForCurrent(principal);
