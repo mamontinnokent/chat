@@ -21,6 +21,7 @@ import java.security.Principal;
 @RequestMapping("api/v1/chat/")
 @Tag(name = "Chat controller", description = "Контроллер отвечает за логику работы с чатами")
 public class ChatControllerV1 {
+
     private final ChatService chatService;
 
     @PostMapping("create")

@@ -1,6 +1,5 @@
 package ru.chat.entity;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import ru.chat.entity.enums.ChatRole;
@@ -11,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @Table
 @Entity
 @Getter

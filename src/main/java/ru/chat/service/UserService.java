@@ -107,4 +107,30 @@ public class UserService {
         log.info("{} зашёл в свой профиль", user.getUsername());
         return this.userMapper.toUserResponseDTO(user, list);
     }
+
+    public void block(Principal principal, Long id) throws YouDontHavePermissionExceptiom {
+        var admin = this.fromPrincipal(principal);
+
+        if (admin.getRole() == AppRole.ROLE_ADMIN) {
+            var user = this.userRepository.getById(id).setBlocked(true);
+            userRepository.save(user);
+
+            log.info("{} был заблокирован.", user.getUsername());
+        } else {
+            throw new YouDontHavePermissionExceptiom(admin.getUsername() + " не админ.");
+        }
+    }
+
+    public void unblock(Principal principal, Long id) throws YouDontHavePermissionExceptiom {
+        var admin = this.fromPrincipal(principal);
+
+        if (admin.getRole() == AppRole.ROLE_ADMIN) {
+            var user = this.userRepository.getById(id).setBlocked(false);
+            userRepository.save(user);
+
+            log.info("{} был разблокирован.", user.getUsername());
+        } else {
+            throw new YouDontHavePermissionExceptiom(admin.getUsername() + " не админ.");
+        }
+    }
 }

@@ -18,7 +18,6 @@ import ru.chat.mapper.UserMapper;
 
 import java.security.Principal;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +26,6 @@ import java.util.Map;
 @Component
 public class TestUtils {
 
-    private int iterator = 0;
 
     public UserMapper getUserMapper() {
         return new UserMapper() {
@@ -188,30 +186,5 @@ public class TestUtils {
                 .setPassword(new BCryptPasswordEncoder(12).encode("test"))
                 .setBlocked(false)
                 .setRole(role);
-    }
-
-    public UserInChat getUIC(Long id, ChatRole role, Chat chat, User user) {
-        return new UserInChat()
-                .setId(id)
-                .setInChat(true)
-                .setBlockedTime(Timestamp.valueOf(LocalDateTime.now()))
-                .setKickedTime(Timestamp.valueOf(LocalDateTime.now()))
-                .setUser(user)
-                .setChat(chat)
-                .setRole(role);
-    }
-
-    public Chat createChat(Long id, User creator, boolean privacy) {
-        var chat = new Chat()
-                .setId(id)
-                .setNameChat("chat" + id)
-                .setPrivacy(privacy)
-                .setCreationDate(Timestamp.valueOf(LocalDateTime.now()));
-
-        var uic = getUIC(1l, ChatRole.ROLE_CREATOR, chat, creator);
-
-        chat.getMembers().add(uic);
-        creator.getChats().add(uic);
-        return chat;
     }
 }

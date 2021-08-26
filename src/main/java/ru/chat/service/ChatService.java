@@ -22,7 +22,7 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -67,11 +67,19 @@ public class ChatService {
     }
 
     // * Получаем все чатики для текущего юзера
-    public List<UserInChat> getAllForCurrent(Principal principal) {
+    public Map<String, Long> getAllForCurrent(Principal principal) {
         var user = this.fromPrincipal(principal);
         log.info("Пользователь получил свои чатики", user.getUsername());
-        return this.userInChatRepository.findAllByUserAndInChat(user, true);
-//                .collect(Collectors.toMap(k -> k.getChat().getNameChat(), v -> v.getId()));
+
+
+        var map = new HashMap<String, Long>();
+        var allByUserAndInChat = this.userInChatRepository.findAllByUserAndInChat(user, true);
+
+        allByUserAndInChat.stream()
+                .map(uic -> uic.getChat())
+                .forEach(chat -> map.put(chat.getNameChat(), chat.getId()));
+
+        return map;
     }
 
 
@@ -105,7 +113,7 @@ public class ChatService {
 
         ChatResponseDTO responseDTO = this.chatMapper.getFromChat(chat);
 
-        log.info("Для юзера {} получен чатик {}",user.getUsername(), chat.getNameChat());
+        log.info("Для юзера {} получен чатик {}", user.getUsername(), chat.getNameChat());
         return responseDTO;
     }
 

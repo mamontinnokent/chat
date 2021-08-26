@@ -70,4 +70,26 @@ public class UserControllerV1 {
     public ResponseEntity<?> update(@Valid @RequestBody UserUpdateRequestDTO userDTO, Principal principal) {
         return ResponseEntity.ok(this.userService.update(userDTO, principal));
     }
+
+    @GetMapping("block/{id}")
+    @Operation(summary = "Блокировка пользователей.")
+    public ResponseEntity<?> block(@PathVariable Long id, Principal principal) {
+        try {
+            userService.block(principal, id);
+            return ResponseEntity.ok("Success");
+        } catch (YouDontHavePermissionExceptiom e) {
+            return ResponseEntity.badRequest().body("Bad request");
+        }
+    }
+
+    @GetMapping("unblock/{id}")
+    @Operation(summary = "Разблокировка пользователей")
+    public ResponseEntity<?> unblock(@PathVariable Long id, Principal principal) {
+        try {
+            userService.block(principal, id);
+            return ResponseEntity.ok("Success");
+        } catch (YouDontHavePermissionExceptiom e) {
+            return ResponseEntity.badRequest().body("Bad request");
+        }
+    }
 }
