@@ -57,16 +57,16 @@ class MessageServiceTest {
 
         userService.create(userDto1);
         userService.create(userDto2);
-
         userService.createAdmin(adminDto1);
 
 
         var chatDto1 = new ChatCreateRequestDTO("test_chat_1", false);
 
         chatService.create(chatDto1, principal1);
-
         chatService.add(principal2, 1L);
         chatService.add(principal3, 1L);
+
+        chatService.block(2L, principal3);
     }
 
     @Test
@@ -87,21 +87,13 @@ class MessageServiceTest {
 
     @Test
     void sendByBlockUser() {
-        var user = userRepository.getById(1L);
-
         try {
-            messageService.send(new MessageSendRequestDTO(1L, 1L, "Some msg"));
-            var msg = messageRepository.getById(1L);
-            var chat = chatRepository.getById(1L);
+            messageService.send(new MessageSendRequestDTO(2L, 1L, "Some msg"));
 
-            Assertions.assertEquals("Some msg", msg.getContent());
-            Assertions.assertEquals(chat, msg.getChat());
-            Assertions.assertEquals(chat.getMessages().get(0), msg);
-
+            fail("Тут должно быть исключение.");
         } catch (YouDontHavePermissionExceptiom e) {
-            fail("Тут не должно быть исключений.");
+            // * Всё кул!!!
         }
-
     }
 
     @Test

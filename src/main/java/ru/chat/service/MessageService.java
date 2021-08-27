@@ -42,14 +42,16 @@ public class MessageService {
         var currentTime = Timestamp.valueOf(LocalDateTime.now());
 
         // * Проверка заблокирован ли пользователь
-        if (user.getBlockedTime().before(currentTime)) {
+        if (user.getBlockedTime().after(currentTime) && !user.getUser().isBlocked()) {
             var chat = chatRepository.getById(dto.getChatId());
-            var message = messageRepository.save(new Message(
-                    user.getUser().getUsername(),
-                    dto.getContent(),
-                    chat,
-                    user
-            ));
+            var message = messageRepository.save(
+                    new Message(
+                            user.getUser().getUsername(),
+                            dto.getContent(),
+                            chat,
+                            user
+                    )
+            );
 
             user.getMessages().add(message);
             this.userInChatRepository.save(user);
