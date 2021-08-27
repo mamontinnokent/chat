@@ -49,13 +49,13 @@ public class UserOperate {
         var user = this.userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
         var chat = this.chatRepository.getByNameChat(chatName);
-        var moderatorInFuture = this.userInChatRepository.findByUserAndChat(user, chat);
+        var moderatorInFuture = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
 
         if (moderatorInFuture.getRole() == ChatRole.ROLE_CREATOR
                 || moderatorInFuture.getRole() == ChatRole.ROLE_ADMIN)
             return;
 
-        var admin = this.userInChatRepository.findByUserAndChat(this.fromPrincipal(principal), chat);
+        var admin = this.userInChatRepository.findByUserAndChat(this.fromPrincipal(principal), chat).orElse(null);
 
         if ((admin.getRole() == ChatRole.ROLE_ADMIN || moderatorInFuture.getRole() == ChatRole.ROLE_USER) && !doYouModerator) {
             moderatorInFuture.setRole(ChatRole.ROLE_MODERATOR);

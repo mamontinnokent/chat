@@ -62,7 +62,7 @@ public class RoomOperate {
     public void delete(String chatName, Principal principal) throws YouDontHavePermissionExceptiom {
         var user = this.fromPrincipal(principal);
         var chat = chatRepository.getByNameChat(chatName);
-        var permission = userInChatRepository.findByUserAndChat(user, chat);
+        var permission = userInChatRepository.findByUserAndChat(user, chat).orElse(null);
 
         if (permission.getRole() == ChatRole.ROLE_ADMIN || permission.getRole() == ChatRole.ROLE_CREATOR) {
             this.chatRepository.delete(permission.getChat());
@@ -77,7 +77,7 @@ public class RoomOperate {
     public void add(String chatName, Principal principal) throws YouDontHavePermissionExceptiom {
         var user = this.fromPrincipal(principal);
         var chat = this.chatRepository.getByNameChat(chatName);
-        var userInChat = this.userInChatRepository.findByUserAndChat(user, chat);
+        var userInChat = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
         var currentDate = Timestamp.valueOf(LocalDateTime.now());
 
         // * Если юзер уже был в чатике, то просто обновляем статус
@@ -106,9 +106,9 @@ public class RoomOperate {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
         var user = this.userRepository.findByUsername(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
-        var checked = this.userInChatRepository.findByUserAndChat(user, chat);
+        var checked = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
         var admin = this.userInChatRepository
-                .findByUserAndChat(this.fromPrincipal(principal), chat);
+                .findByUserAndChat(this.fromPrincipal(principal), chat).orElse(null);
         var currentTime = Timestamp.valueOf(LocalDateTime.now());
 
         if (checked == null) {
@@ -134,7 +134,7 @@ public class RoomOperate {
     public void update(Long id, Principal principal, String newName) throws YouDontHavePermissionExceptiom {
         var chat = chatRepository.getById(id);
         var user = this.userInChatRepository
-                .findByUserAndChat(this.fromPrincipal(principal), chat);
+                .findByUserAndChat(this.fromPrincipal(principal), chat).orElse(null);
 
         if (user.getRole() == ChatRole.ROLE_CREATOR || user.getRole() == ChatRole.ROLE_ADMIN) {
             chat.setNameChat(newName);
@@ -149,7 +149,7 @@ public class RoomOperate {
         var user = this.fromPrincipal(principal);
         var chat = this.chatRepository.getById(chatId);
 
-        var userInChat = this.userInChatRepository.findByUserAndChat(user, chat);
+        var userInChat = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
         userInChat.setInChat(false);
         this.userInChatRepository.save(userInChat);
 
@@ -162,8 +162,8 @@ public class RoomOperate {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
         var checker = this.userInChatRepository
-                .findByUserAndChat(this.fromPrincipal(principal), chat);
-        var kickedUser = this.userInChatRepository.findByUserAndChat(user, chat);
+                .findByUserAndChat(this.fromPrincipal(principal), chat).orElse(null);
+        var kickedUser = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
 
         if (checker.getRole() != ChatRole.ROLE_USER) {
             kickedUser.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusYears(11)));
@@ -177,13 +177,13 @@ public class RoomOperate {
     public void disconnectOtherUserForValueMinutes(String chatName, String username, long minuteCount, Principal principal) {
         var admin = this.fromPrincipal(principal);
         var chat = this.chatRepository.getByNameChat(chatName);
-        var adminInChat = this.userInChatRepository.findByUserAndChat(admin, chat);
+        var adminInChat = this.userInChatRepository.findByUserAndChat(admin, chat).orElse(null);
 
         if (adminInChat.getRole() != ChatRole.ROLE_USER) {
             var currentDate = Timestamp.valueOf(LocalDateTime.now());
             var user = this.userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User with username not found"));
-            var userInChat = this.userInChatRepository.findByUserAndChat(user, chat);
+            var userInChat = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
 
             userInChat.setInChat(false);
             userInChat.setKickedTime(Timestamp.valueOf(LocalDateTime.now().plusMinutes(minuteCount)));

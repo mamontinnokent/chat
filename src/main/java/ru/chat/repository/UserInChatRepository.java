@@ -7,12 +7,15 @@ import ru.chat.entity.User;
 import ru.chat.entity.UserInChat;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserInChatRepository extends JpaRepository<UserInChat, Long> {
     List<UserInChat> findAllByChatAndInChat(Chat chat, boolean inChat);
     List<UserInChat> findAllByUserAndInChat(User user, Boolean inChat);
 
-    UserInChat findByUserAndChat(User user, Chat chat);
+    Optional<UserInChat> findByUserAndChat(User user, Chat chat);
     void deleteAllByUser(User user);
+
+    boolean existsByUserAndChat(User user, Chat chat);
 }

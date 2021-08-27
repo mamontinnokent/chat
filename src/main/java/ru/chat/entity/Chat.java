@@ -37,7 +37,7 @@ public class Chat {
     )
     private List<Message> messages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<UserInChat> members = new HashSet<>();
 
     public Chat(String nameChat, boolean privacy) {

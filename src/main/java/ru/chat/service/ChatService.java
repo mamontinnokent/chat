@@ -58,6 +58,11 @@ public class ChatService {
                 userInChat.setRole(ChatRole.ROLE_ADMIN);
 
             var save = this.userInChatRepository.save(userInChat);
+
+            chat.getMembers().add(save);
+            user.getChats().add(save);
+            chatRepository.save(chat);
+            userRepository.save(user);
             log.info("Чат {} был создан", chat.getNameChat());
 
         } else {
@@ -129,11 +134,11 @@ public class ChatService {
         var user = this.fromPrincipal(principal);
         var chat = this.chatRepository.getById(chatId);
         var currentDate = Timestamp.valueOf(LocalDateTime.now());
-        var userInChat = userInChatRepository.findByUserAndChat(user, chat);
+        var flag = this.userInChatRepository.existsByUserAndChat(user, chat);
 
         // * Если юзер уже был в чатике, то просто обновляем статус
-        if (userInChat == null) {
-            userInChat = this.chatMapper.addToChat(user, chat);
+        if (!flag) {
+            var userInChat = this.chatMapper.addToChat(user, chat);
 
             // * Если юзер админ в приложении, то он и в чатике админ
             if (user.getRole() == AppRole.ROLE_ADMIN)
@@ -142,6 +147,8 @@ public class ChatService {
             this.userInChatRepository.save(userInChat);
             log.info("{} вошёл в чатик {}", userInChat.getUser().getUsername(), userInChat.getChat().getNameChat());
         } else {
+            var userInChat = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
+
             if (userInChat.getKickedTime().before(currentDate)) {
                 userInChat.setInChat(true);
                 this.userInChatRepository.save(userInChat);
@@ -155,7 +162,7 @@ public class ChatService {
     public void update(ChatUpdateRequestDTO dto, Principal principal) throws YouDontHavePermissionExceptiom {
         var chat = this.chatRepository.getById(dto.getId());
         UserInChat user = this.userInChatRepository
-                .findByUserAndChat(this.fromPrincipal(principal), chat);
+                .findByUserAndChat(this.fromPrincipal(principal), chat).orElse(null);
 
         if (user.getRole() == ChatRole.ROLE_CREATOR || user.getRole() == ChatRole.ROLE_ADMIN) {
             chat.setNameChat(dto.getNameChat());
@@ -170,19 +177,25 @@ public class ChatService {
     // * Этот же метод отвечает за разблокировку. 
     // * Если пользователь уже заблокирован и он вызовется на него же - он будет разблокирован
     public void block(Long userInChatId, Principal principal) throws YouDontHavePermissionExceptiom {
-        var block = this.userInChatRepository.getById(userInChatId);
+        var block = this.userInChatRepository.findById(userInChatId)
+                .orElseThrow(() -> new UsernameNotFoundException(""));
+
         var government = this.userInChatRepository
-                .findByUserAndChat(this.fromPrincipal(principal), block.getChat());
+                .findByUserAndChat(this.fromPrincipal(principal), block.getChat())
+                .orElseThrow(() -> new UsernameNotFoundException(""));
+
         var currentTime = Timestamp.valueOf(LocalDateTime.now());
 
-        if ((government.getRole() == ChatRole.ROLE_ADMIN || government.getRole() == ChatRole.ROLE_MODERATOR) && block.getBlockedTime().before(currentTime)) {
-            Timestamp blockTime = Timestamp.valueOf(LocalDateTime.now().plusYears(20));
-            block.setBlockedTime(blockTime);
-            this.userInChatRepository.save(block);
-        } else if ((government.getRole() == ChatRole.ROLE_ADMIN || government.getRole() == ChatRole.ROLE_MODERATOR) && block.getBlockedTime().after(currentTime)) {
-            Timestamp blockTime = Timestamp.valueOf(LocalDateTime.now().minusYears(203));
-            block.setBlockedTime(blockTime);
-            this.userInChatRepository.save(block);
+        if ((government.getRole() == ChatRole.ROLE_ADMIN || government.getRole() == ChatRole.ROLE_MODERATOR) && block != null) {
+            if (block.getBlockedTime().before(currentTime)) {
+                Timestamp blockTime = Timestamp.valueOf(LocalDateTime.now().plusYears(20));
+                block.setBlockedTime(blockTime);
+                this.userInChatRepository.save(block);
+            } else if (block.getBlockedTime().after(currentTime) && block != null) {
+                Timestamp blockTime = Timestamp.valueOf(LocalDateTime.now().minusYears(203));
+                block.setBlockedTime(blockTime);
+                this.userInChatRepository.save(block);
+            }
         } else {
             throw new YouDontHavePermissionExceptiom("You don't have permission");
         }
@@ -193,7 +206,7 @@ public class ChatService {
     public void setModerator(Long userInChatId, Principal principal) throws YouDontHavePermissionExceptiom {
         var moderatorInFuture = this.userInChatRepository.getById(userInChatId);
         var admin = this.userInChatRepository
-                .findByUserAndChat(this.fromPrincipal(principal), moderatorInFuture.getChat());
+                .findByUserAndChat(this.fromPrincipal(principal), moderatorInFuture.getChat()).orElse(null);
 
         if (admin.getRole() == ChatRole.ROLE_ADMIN && moderatorInFuture.getRole() == ChatRole.ROLE_USER) {
             moderatorInFuture.setRole(ChatRole.ROLE_MODERATOR);
@@ -212,9 +225,9 @@ public class ChatService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
         var user = this.userRepository.findByUsername(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
-        var checked = this.userInChatRepository.findByUserAndChat(user, chat);
+        var checked = this.userInChatRepository.findByUserAndChat(user, chat).orElse(null);
         var checker = this.userInChatRepository
-                .findByUserAndChat(this.fromPrincipal(principal), chat);
+                .findByUserAndChat(this.fromPrincipal(principal), chat).orElse(null);
 
         if (checked == null) {
             checked = chatMapper.create(user, chat);
