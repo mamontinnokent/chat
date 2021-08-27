@@ -1,6 +1,7 @@
 package ru.chat.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,6 +70,14 @@ class MessageServiceTest {
         chatService.block(2L, principal3);
     }
 
+    @AfterEach
+    void tearDown() {
+        messageRepository.deleteAll();
+        userInChatRepository.deleteAll();
+        userRepository.deleteAll();
+        chatRepository.deleteAll();
+    }
+
     @Test
     void sendBySimpleUser() {
         try {
@@ -98,9 +107,20 @@ class MessageServiceTest {
 
     @Test
     void delete() {
-    }
+        try {
+            messageService.send(new MessageSendRequestDTO(1L, 1L, "Some msg"));
+            var countBefore = messageRepository.count();
 
-    @Test
-    void save() {
+            messageService.delete(3L, 1L);
+
+            // ! wtf?
+            var countAfter = messageRepository.count();
+
+            Assertions.assertEquals(1L, countBefore);
+            Assertions.assertEquals(0L, countAfter);
+
+        } catch (YouDontHavePermissionExceptiom e) {
+            fail("Тут не должно быть исключений.");
+        }
     }
 }

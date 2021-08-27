@@ -37,53 +37,12 @@ public class MessageService {
     }
 
     // * Отправка сообщений. Отправлять может только не заблокированный пользователь.
-    public void send(MessageSendRequestDTO dto) throws YouDontHavePermissionExceptiom {
+    public MessageSendRequestDTO send(MessageSendRequestDTO dto) throws YouDontHavePermissionExceptiom {
         var user = this.userInChatRepository.getById(dto.getUserId());
         var currentTime = Timestamp.valueOf(LocalDateTime.now());
 
         // * Проверка заблокирован ли пользователь
-        if (user.getBlockedTime().after(currentTime) && !user.getUser().isBlocked()) {
-            var chat = chatRepository.getById(dto.getChatId());
-            var message = messageRepository.save(
-                    new Message(
-                            user.getUser().getUsername(),
-                            dto.getContent(),
-                            chat,
-                            user
-                    )
-            );
-
-            user.getMessages().add(message);
-            this.userInChatRepository.save(user);
-
-            chat.getMessages().add(message);
-            this.chatRepository.save(chat);
-
-            log.info("{} отправил сообщение", user.getUser().getUsername());
-        } else {
-            throw new YouDontHavePermissionExceptiom("You are banned");
-        }
-    }
-
-    // * Удаление сообщений. Удалять могут только модератор и админы.
-    public void delete(Long userId, Long messageId) throws YouDontHavePermissionExceptiom {
-        var user = this.userInChatRepository.getById(userId);
-
-        if (user.getRole() == ChatRole.ROLE_MODERATOR || user.getRole() == ChatRole.ROLE_ADMIN) {
-            var message = this.messageRepository.getById(messageId);
-            this.messageRepository.delete(message);
-            log.info("Сообщение с id - {} было удалено", message.getId());
-        } else {
-            throw new YouDontHavePermissionExceptiom("You don't have permission");
-        }
-    }
-
-    public MessageSendRequestDTO save(MessageSendRequestDTO dto) throws YouDontHavePermissionExceptiom {
-        var user = this.userInChatRepository.getById(dto.getUserId());
-        var currentTime = Timestamp.valueOf(LocalDateTime.now());
-
-        // * Проверка заблокирован ли пользователь
-        if (user.getBlockedTime().before(currentTime)) {
+        if (user.getBlockedTime().before(currentTime) && !user.getUser().isBlocked()) {
             var chat = chatRepository.getById(dto.getChatId());
             var message = new Message(
                     user.getUser().getUsername(),
@@ -99,6 +58,18 @@ public class MessageService {
             return dto;
         } else {
             throw new YouDontHavePermissionExceptiom("You are banned");
+        }
+    }
+
+    // * Удаление сообщений. Удалять могут только модератор и админы.
+    public void delete(Long userInChatId, Long messageId) throws YouDontHavePermissionExceptiom {
+        var user = this.userInChatRepository.getById(userInChatId);
+
+        if (user.getRole() == ChatRole.ROLE_MODERATOR || user.getRole() == ChatRole.ROLE_ADMIN) {
+            this.messageRepository.deleteById(messageId);
+            log.info("Сообщение с id - {} было удалено", messageId);
+        } else {
+            throw new YouDontHavePermissionExceptiom("You don't have permission");
         }
     }
 }

@@ -19,7 +19,7 @@ public class ChatWebSocketController {
     @SendTo("/topic/chat")
     public MessageSendRequestDTO messaging(@DestinationVariable Long chatId, MessageSendRequestDTO message) throws Exception {
         try {
-            return this.messageService.save(message);
+            return this.messageService.update(message);
         } catch (YouDontHavePermissionExceptiom e) {
             return null;
         }
