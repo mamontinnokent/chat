@@ -44,16 +44,19 @@ public class MessageService {
         // * Проверка заблокирован ли пользователь
         if (user.getBlockedTime().before(currentTime)) {
             var chat = chatRepository.getById(dto.getChatId());
-            var message = new Message(
+            var message = messageRepository.save(new Message(
                     user.getUser().getUsername(),
                     dto.getContent(),
                     chat,
                     user
-            );
+            ));
 
             user.getMessages().add(message);
-            this.messageRepository.save(message);
             this.userInChatRepository.save(user);
+
+            chat.getMessages().add(message);
+            this.chatRepository.save(chat);
+
             log.info("{} отправил сообщение", user.getUser().getUsername());
         } else {
             throw new YouDontHavePermissionExceptiom("You are banned");
@@ -85,7 +88,7 @@ public class MessageService {
                     dto.getContent(),
                     chat,
                     user
-            ) ;
+            );
 
             user.getMessages().add(message);
             this.messageRepository.save(message);
