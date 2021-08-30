@@ -12,6 +12,7 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -201,51 +202,62 @@ public class ChatBotService {
     //   *           Первым сообщением бот выводит login человека, который оставил этот комментарий - Вторым сообщением бот выводит сам комментарий
     private ResponseEntity<List<MessageSendResponseDTO>> youTube(MessageSendRequestDTO message, Principal principal) throws YouDontHavePermissionExceptiom, IOException {
         var arrReq = message.getContent().split(" ");
-        var operate = arrReq[0];
+        var operate = arrReq[1];
+        String result;
         String[] names;
+        String clearReq;
+        String videoName;
+        String channelName;
 
         switch (operate) {
             case "help":
                 return ResponseEntity.ok(List.of(new MessageSendResponseDTO(YOUTUBE_INFO)));
             case "find":
-                names = arrReq[2].split("||");
+                clearReq = message.getContent().substring(12).trim() + " ";
+                var flagViews = false;
+                var flagLikes = false;
 
-                if (arrReq.length == 3) {
-                    var videoName = names[0];
-                    var channelName = names[1];
-                    var videoId = this.youTubeOperate.findVideoIdBy(videoName, channelName);
-                    if (videoId == null) return DEFAULT_BAD_RESPONSE;
+                Pattern patternViews = Pattern.compile(" -v ");
+                Pattern patternLikes = Pattern.compile(" -l ");
 
-
-                    var result = LINK_FORM + videoId;
-                    return ResponseEntity.ok(List.of(new MessageSendResponseDTO(result)));
-
-                } else if (arrReq[3].equals("-v")) {
-                    var videoName = names[0];
-                    var channelName = names[1];
-                    var videoId = this.youTubeOperate.findVideoIdBy(videoName, channelName);
-                    if (videoId == null) return DEFAULT_BAD_RESPONSE;
-
-                    var viewCount = this.youTubeOperate.getViewsBy(videoId);
-
-                    var result = LINK_FORM + videoId + "\n" + viewCount;
-                    return ResponseEntity.ok(List.of(new MessageSendResponseDTO(result)));
-
-                } else if (arrReq[3].equals("-l")) {
-                    var videoName = names[0];
-                    var channelName = names[1];
-                    var videoId = this.youTubeOperate.findVideoIdBy(videoName, channelName);
-                    if (videoId == null) return DEFAULT_BAD_RESPONSE;
-
-                    var likesCount = this.youTubeOperate.getLikesBy(videoId);
-
-                    var result = LINK_FORM + videoId + "\n" + likesCount;
-                    return ResponseEntity.ok(List.of(new MessageSendResponseDTO(result)));
+                if (patternViews.matcher(clearReq).find()) {
+                    flagViews = true;
+                    clearReq = clearReq.replaceAll(" -v ", "");
                 }
 
+
+                if (patternLikes.matcher(clearReq).find()) {
+                    flagLikes = true;
+                    clearReq = clearReq.replaceAll(" -l ", "");
+                }
+
+                names = clearReq.split("\\|\\|");
+                videoName = names[1];
+                channelName = names[0];
+
+                var videoId = this.youTubeOperate.findVideoIdBy(videoName, channelName);
+
+                if (videoId == null) return DEFAULT_BAD_RESPONSE;
+
+                result = LINK_FORM + videoId;
+
+                if (flagViews == true) {
+                    var viewCount = this.youTubeOperate.getViewsBy(videoId);
+
+                    result += "\n" + viewCount;
+                }
+
+                if (flagLikes == true) {
+                    var likesCount = this.youTubeOperate.getLikesBy(videoId);
+
+                    result = LINK_FORM + videoId + "\n" + likesCount;
+                }
+
+                return ResponseEntity.ok(List.of(new MessageSendResponseDTO(result)));
+
             case "channelInfo":
-                names = arrReq[2].split("||");
-                var channelName = names[0];
+                names = message.getContent().substring(19).trim().split("||");
+                channelName = names[0];
                 var channelId = this.youTubeOperate.findChannelIdInYouTube(channelName);
                 if (channelId == null) return DEFAULT_BAD_RESPONSE;
 
@@ -257,7 +269,7 @@ public class ChatBotService {
                 return ResponseEntity.ok(List.of(new MessageSendResponseDTO(channelName), new MessageSendResponseDTO(idStr.toString())));
 
             case "videoCommentRandom":
-                names = arrReq[2].split("||");
+                names = message.getContent().substring(26).split("||");
                 var nameVideo = names[0];
                 var nameChannel = names[1];
                 var idVideo = this.youTubeOperate.findVideoIdBy(nameVideo, nameChannel);

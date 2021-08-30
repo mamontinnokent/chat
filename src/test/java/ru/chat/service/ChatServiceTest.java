@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.chat.ChatApplication;
@@ -60,6 +61,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Создание чата обычным пользователям.")
     void createBySimpleUser() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -95,6 +97,7 @@ class ChatServiceTest {
 
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Создание чата заблокированным пользователям.")
     void createByBlockedUser() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -111,6 +114,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Получение всех чатиков для текущего пользователя.")
     void getAllForCurrent() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -147,6 +151,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Получение всех чатиков для текущего пользователя.")
     void delete() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -183,6 +188,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Проверка выхода из чатик.")
     void exit() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -203,6 +209,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Получение чатика.")
     void get() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -225,6 +232,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Получение всех чатиков.")
     void getAll() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -261,6 +269,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Добавление в чатик.")
     void add() throws Exception {
         var principal1 = testUtils.getPrincipal("test1@gmail.com");
@@ -291,6 +300,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Обновление чатика.")
     void update() throws Exception {
         var principal = testUtils.getPrincipal("test@gmail.com");
@@ -312,6 +322,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Блокирование пользователя в чате.")
     void block() throws Exception {
         var creator = testUtils.getPrincipal("creator@gmail.com");
@@ -339,6 +350,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Назначение модератора.")
     void setModerator() throws Exception {
         var creator = testUtils.getPrincipal("creator@gmail.com");
@@ -368,6 +380,7 @@ class ChatServiceTest {
     }
 
     @Test
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     @DisplayName("ChatService. Добавление другого пользователя.")
     void addOtherUser() throws Exception {
         var creator = testUtils.getPrincipal("creator@gmail.com");

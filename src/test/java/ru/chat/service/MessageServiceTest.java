@@ -3,12 +3,12 @@ package ru.chat.service;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.chat.dto.request.ChatCreateRequestDTO;
 import ru.chat.dto.request.MessageSendRequestDTO;
 import ru.chat.dto.request.UserRegRequestDTO;
@@ -22,6 +22,7 @@ import ru.chat.service.utils.TestUtils;
 import javax.transaction.Transactional;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode;
 
 
 @Slf4j
@@ -46,7 +47,6 @@ class MessageServiceTest {
     @Autowired
     private TestUtils testUtils;
 
-    @BeforeEach
     void setUp() throws Exception, YouDontHavePermissionExceptiom {
         var userDto1 = new UserRegRequestDTO("test1@gmail.com", "test1", "test");
         var userDto2 = new UserRegRequestDTO("test2@gmail.com", "test2", "test");
@@ -79,15 +79,18 @@ class MessageServiceTest {
     }
 
     @Test
-    void sendBySimpleUser() {
+    @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
+    void sendBySimpleUser() throws YouDontHavePermissionExceptiom, Exception {
+        setUp();
+
         try {
             messageService.send(new MessageSendRequestDTO(1L, 1L, "Some msg"));
             var msg = messageRepository.getById(1L);
             var chat = chatRepository.getById(1L);
 
+
             Assertions.assertEquals("Some msg", msg.getContent());
             Assertions.assertEquals(chat, msg.getChat());
-            Assertions.assertEquals(chat.getMessages().get(0), msg);
 
         } catch (YouDontHavePermissionExceptiom e) {
             fail("Тут не должно быть исключений.");
@@ -95,9 +98,13 @@ class MessageServiceTest {
     }
 
     @Test
-    void sendByBlockUser() {
+    @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+    void sendByBlockUser() throws YouDontHavePermissionExceptiom, Exception {
+        setUp();
+
         try {
             messageService.send(new MessageSendRequestDTO(2L, 1L, "Some msg"));
+
 
             fail("Тут должно быть исключение.");
         } catch (YouDontHavePermissionExceptiom e) {
@@ -106,7 +113,10 @@ class MessageServiceTest {
     }
 
     @Test
-    void delete() {
+    @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+    void delete() throws YouDontHavePermissionExceptiom, Exception {
+        setUp();
+
         try {
             messageService.send(new MessageSendRequestDTO(1L, 1L, "Some msg"));
             var countBefore = messageRepository.count();

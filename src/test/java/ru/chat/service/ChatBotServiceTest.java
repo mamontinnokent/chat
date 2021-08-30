@@ -63,6 +63,14 @@ class ChatBotServiceTest {
         Assertions.assertTrue(!content.isBlank() && !content.isEmpty());
     }
 
+    //   * 1. //yBot find {название канала}||{название видео} - в ответ бот присылает ссылку на ролик
+    //   *           -v - выводит количество текущих просмотров.
+    //   *           -l - выводит количество лайков под видео.
+    //   * 2. //yBot help - список доступных команд для взаимодействия.
+    //   * 3. //yBot channelInfo {имя канала}. - Первым сообщением от бота выводится имя канала, вторым - ссылки на последние 5 роликов
+    //   * 4. //yBot videoCommentRandom {имя канала}||{Название ролика} - Среди комментариев к ролику рандомно выбирается 1 -
+    //   *           Первым сообщением бот выводит login человека, который оставил этот комментарий - Вторым сообщением бот выводит сам комментарий
+
     @Test
     void yBotHelp() throws YouDontHavePermissionExceptiom, IOException {
         var principal1 = testUtils.getPrincipal("test1@gmail.com");
@@ -75,13 +83,51 @@ class ChatBotServiceTest {
     }
 
     @Test
-    void yBotFind() throws YouDontHavePermissionExceptiom, IOException {
+    void yBotFindWithoutFlags() throws YouDontHavePermissionExceptiom, IOException {
         var principal1 = testUtils.getPrincipal("test1@gmail.com");
         var response = chatBotService
-                .parser(new MessageSendRequestDTO(1L, 1L, "//yBot find ||"), principal1);
+                .parser(new MessageSendRequestDTO(1L, 1L, "//yBot find FKJ||FKJ - Just Piano (In partnership with Calm)"), principal1);
 
         var content = response.getBody().get(0).getContent();
-        System.out.println(content);
+        log.info(content);
+        Assertions.assertEquals("https://www.youtube.com/watch?v=AmmFD2OIs_k", content);
+    }
+
+    @Test
+    void yBotFindWithFlagV() throws YouDontHavePermissionExceptiom, IOException {
+        var principal1 = testUtils.getPrincipal("test1@gmail.com");
+        var response = chatBotService
+                .parser(new MessageSendRequestDTO(1L, 1L, "//yBot find FKJ||FKJ - Just Piano (In partnership with Calm) -v"), principal1);
+
+        var content = response.getBody().get(0).getContent();
+
+        log.info(content);
         Assertions.assertTrue(!content.isBlank() && !content.isEmpty());
     }
+
+    @Test
+    void yBotFindWithFlagL() throws YouDontHavePermissionExceptiom, IOException {
+        var principal1 = testUtils.getPrincipal("test1@gmail.com");
+        var response = chatBotService
+                .parser(new MessageSendRequestDTO(1L, 1L, "//yBot find FKJ||FKJ - Just Piano (In partnership with Calm) -l"), principal1);
+
+        var content = response.getBody().get(0).getContent();
+
+        log.info(content);
+        Assertions.assertTrue(!content.isBlank() && !content.isEmpty());
+    }
+
+    @Test
+    void yBotFindWithFlagLAndV() throws YouDontHavePermissionExceptiom, IOException {
+        var principal1 = testUtils.getPrincipal("test1@gmail.com");
+        var response = chatBotService
+                .parser(new MessageSendRequestDTO(1L, 1L, "//yBot find FKJ||FKJ - Just Piano (In partnership with Calm) -l -v"), principal1);
+
+        var content = response.getBody().get(0).getContent();
+
+        log.info(content);
+        Assertions.assertTrue(!content.isBlank() && !content.isEmpty());
+    }
+
+
 }

@@ -1,6 +1,8 @@
 package ru.chat.service;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,14 @@ import java.time.LocalDateTime;
 @Slf4j
 @Service
 @Transactional
-@AllArgsConstructor
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MessageService {
 
-    private final UserRepository userRepository;
-    private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
-    private final UserInChatRepository userInChatRepository;
+    UserRepository userRepository;
+    ChatRepository chatRepository;
+    MessageRepository messageRepository;
+    UserInChatRepository userInChatRepository;
 
     // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
