@@ -12,9 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity
 @Getter
 @Setter
+@Entity
 @NoArgsConstructor
 @Table(name = "chat")
 public class Chat {
@@ -23,13 +23,12 @@ public class Chat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String nameChat;
 
-    private String caption;
+    private boolean privacy;
 
     private Timestamp creationDate;
-
-    private boolean privacy;
 
     @OneToMany(
             mappedBy = "chat",
@@ -38,12 +37,11 @@ public class Chat {
     )
     private List<Message> messages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<UserInChat> members = new HashSet<>();
 
-    public Chat(String nameChat, String caption, boolean privacy) {
+    public Chat(String nameChat, boolean privacy) {
         this.nameChat = nameChat;
-        this.caption = caption;
         this.privacy = privacy;
     }
 

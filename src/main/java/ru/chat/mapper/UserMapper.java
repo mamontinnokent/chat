@@ -18,8 +18,12 @@ public interface UserMapper {
     @Mapping(target = "password", expression = "java(this.encodePassword(dto))")
     User create(UserRegRequestDTO dto);
 
-    @Mapping(target = "chats", expression = "java(this.mapChatsToHashMap(user.getChats()))")
-    UserResponseDTO toUserResponseDTO(User user);
+    @Mapping(target = "role", expression = "java(ru.chat.entity.enums.AppRole.ROLE_ADMIN)")
+    @Mapping(target = "password", expression = "java(this.encodePassword(dto))")
+    User createAdmin(UserRegRequestDTO dto);
+
+    @Mapping(target = "chats", expression = "java(this.mapChatsToHashMap(list))")
+    UserResponseDTO toUserResponseDTO(User user, List<UserInChat> list);
 
     default String encodePassword(UserRegRequestDTO dto) {
         return (new BCryptPasswordEncoder(12)).encode(dto.getPassword());

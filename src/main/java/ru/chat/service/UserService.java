@@ -5,9 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.chat.dto.request.UserRegRequestDTO;
-import ru.chat.dto.response.UserResponseDTO;
 import ru.chat.dto.request.UserUpdateRequestDTO;
+import ru.chat.dto.response.UserResponseDTO;
 import ru.chat.entity.User;
+import ru.chat.entity.UserInChat;
 import ru.chat.entity.enums.AppRole;
 import ru.chat.mapper.UserMapper;
 import ru.chat.repository.UserInChatRepository;
@@ -16,8 +17,9 @@ import ru.chat.service.exception.YouDontHavePermissionExceptiom;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,7 +34,7 @@ public class UserService {
     // * Получаем текущего пользователя, утилитарный метод
     private User fromPrincipal(Principal principal) {
         return this.userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException(""));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     public User create(UserRegRequestDTO userDTO) throws Exception {
@@ -41,17 +43,28 @@ public class UserService {
         return user;
     }
 
+    public User createAdmin(UserRegRequestDTO userDTO) throws Exception {
+        var user = this.userRepository.save(userMapper.createAdmin(userDTO));
+        log.info("{} был создан", user.getUsername());
+        return user;
+    }
+
     public UserResponseDTO getById(Long id) throws UsernameNotFoundException {
         var user = this.userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User with id - %d not found exception", id)));
+        List<UserInChat> list = this.userInChatRepository.findAllByUserAndInChat(user, true);
         log.info("Получен пользователь - {} с id - {}", user.getUsername(), id);
-        return userMapper.toUserResponseDTO(user);
+        return userMapper.toUserResponseDTO(user, list);
     }
 
     public Map<String, Long> getAll() {
         log.info("Получены все пользователи");
-        return userRepository.findAll().stream()
-                .collect(Collectors.toMap(k -> k.getUsername(), v -> v.getId()));
+        var listUsers = this.userRepository.findAll();
+        var map = new HashMap<String, Long>();
+        listUsers.stream()
+                .forEach(usr -> map.put(usr.getUsername(), usr.getId()));
+
+        return map;
     }
 
     // * удаление других пользователей для админов приложения
@@ -77,21 +90,47 @@ public class UserService {
     }
 
     public UserUpdateRequestDTO update(UserUpdateRequestDTO userDTO, Principal principal) {
-        var user = this.fromPrincipal(principal);
+        var user = this.fromPrincipal(principal)
+                .setEmail(userDTO.getEmail())
+                .setUsername(userDTO.getUsername());
 
-        user.setEmail(userDTO.getEmail());
-        user.setUsername(userDTO.getUsername());
-
-        this.userRepository.save(user);
+        var newUser = this.userRepository.save(user);
 
         log.info("{} был обновлён", userDTO.getUsername());
-        return userDTO;
+        return new UserUpdateRequestDTO(newUser.getUsername(), newUser.getEmail());
     }
 
     public UserResponseDTO getCurrent(Principal principal) {
         var user = this.fromPrincipal(principal);
+        var list = this.userInChatRepository.findAllByUserAndInChat(user, true);
 
         log.info("{} зашёл в свой профиль", user.getUsername());
-        return this.userMapper.toUserResponseDTO(user);
+        return this.userMapper.toUserResponseDTO(user, list);
+    }
+
+    public void block(Principal principal, Long id) throws YouDontHavePermissionExceptiom {
+        var admin = this.fromPrincipal(principal);
+
+        if (admin.getRole() == AppRole.ROLE_ADMIN) {
+            var user = this.userRepository.getById(id).setBlocked(true);
+            userRepository.save(user);
+
+            log.info("{} был заблокирован.", user.getUsername());
+        } else {
+            throw new YouDontHavePermissionExceptiom(admin.getUsername() + " не админ.");
+        }
+    }
+
+    public void unblock(Principal principal, Long id) throws YouDontHavePermissionExceptiom {
+        var admin = this.fromPrincipal(principal);
+
+        if (admin.getRole() == AppRole.ROLE_ADMIN) {
+            var user = this.userRepository.getById(id).setBlocked(false);
+            userRepository.save(user);
+
+            log.info("{} был разблокирован.", user.getUsername());
+        } else {
+            throw new YouDontHavePermissionExceptiom(admin.getUsername() + " не админ.");
+        }
     }
 }

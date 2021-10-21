@@ -5,13 +5,15 @@ import lombok.Setter;
 import ru.chat.entity.enums.ChatRole;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Table
 @Entity
 @Getter
 @Setter
-@Table
 public class UserInChat {
 
     @Id
@@ -20,9 +22,11 @@ public class UserInChat {
 
     private ChatRole role;
 
-    private boolean blocked;
-
     private boolean inChat;
+
+    private Timestamp blockedTime;
+
+    private Timestamp kickedTime;
 
     @ManyToOne(cascade = CascadeType.REFRESH)
     private User user;
@@ -32,4 +36,10 @@ public class UserInChat {
 
     @OneToMany(mappedBy = "owner")
     private List<Message> messages = new ArrayList<>();
+
+    @PrePersist
+    public void onCreate() {
+        kickedTime = Timestamp.valueOf(LocalDateTime.now());
+        blockedTime = Timestamp.valueOf(LocalDateTime.now());
+    }
 }
